@@ -1,0 +1,16 @@
+<label class="form-control w-full">
+  <span class="label-text text-sm font-medium text-neutral" *ngIf="label">{{ label }}</span>
+  <input
+    class="input input-bordered w-full"
+    [class.input-sm]="size === 'sm'"
+    [ngClass]="inputClass"
+    [type]="type"
+    [placeholder]="placeholder"
+    [value]="value"
+    [disabled]="disabled"
+    [attr.id]="id || null"
+    (input)="onInput(($any($event.target).value || '').toString())"
+  />
+  <span class="label-text-alt text-xs text-neutral/60" *ngIf="helper && !error">{{ helper }}</span>
+  <span class="label-text-alt text-xs text-error" *ngIf="error">{{ error }}</span>
+</label>

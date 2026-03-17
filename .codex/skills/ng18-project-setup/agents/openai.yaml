@@ -1,0 +1,4 @@
+interface:
+  display_name: "Angular 18 Setup"
+  short_description: "Bootstrap Angular 18 with Tailwind + DaisyUI and core config."
+  default_prompt: "Set up or adjust the Angular 18 project configuration and styling stack."

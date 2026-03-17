@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tailwind + DaisyUI"
+  short_description: "Design UI in Angular 18 with Tailwind and DaisyUI"
+  default_prompt: "Create or refactor UI using Tailwind + DaisyUI."

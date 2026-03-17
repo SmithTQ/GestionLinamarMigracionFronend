@@ -1,0 +1,45 @@
+<app-page-container>
+  <section class="flex flex-wrap items-center justify-between gap-4">
+    <div class="space-y-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="badge badge-primary badge-outline">Pedidos</span>
+        <span class="badge badge-secondary">Demo tabla operativa</span>
+      </div>
+      <h1 class="text-3xl font-semibold text-neutral">Gestion de pedidos</h1>
+      <p class="text-sm text-neutral/70">
+        Tabla con paginacion, filtros por columna, sorting y acciones por registro.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <app-button variant="secondary">Exportar</app-button>
+      <app-button (clicked)="openModal()">Abrir modal</app-button>
+      <app-button>Nuevo pedido</app-button>
+    </div>
+  </section>
+
+  <app-table
+    title="Listado operativo"
+    description="Filtros por columna, sorting, acciones y paginacion configurable."
+    [columns]="columns"
+    [rows]="rows"
+    [actions]="actions"
+    [pagination]="pagination"
+    [showFilters]="true"
+    [showActions]="true"
+    [showPagination]="true"
+  ></app-table>
+
+  <app-modal [isOpen]="isModalOpen()" (closed)="closeModal()">
+    <div class="space-y-3">
+      <h3 class="text-lg font-semibold text-neutral">Detalle rapido</h3>
+      <p class="text-sm text-neutral/70">
+        Este es un ejemplo de ventana modal reutilizable para confirmar acciones o
+        mostrar informacion clave.
+      </p>
+      <div class="flex flex-wrap justify-end gap-2">
+        <app-button variant="secondary" (clicked)="closeModal()">Cerrar</app-button>
+        <app-button (clicked)="closeModal()">Continuar</app-button>
+      </div>
+    </div>
+  </app-modal>
+</app-page-container>

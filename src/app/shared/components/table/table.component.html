@@ -1,0 +1,102 @@
+<section class="card bg-base-100 shadow-xl">
+  <div class="card-body gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-3" *ngIf="showHeader">
+      <div>
+        <h2 class="text-lg font-semibold text-neutral" *ngIf="title">{{ title }}</h2>
+        <p class="text-sm text-neutral/70" *ngIf="description">{{ description }}</p>
+      </div>
+      <span class="text-sm text-neutral/60" *ngIf="rows.length">
+        {{ rows.length }} registros
+      </span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th *ngFor="let column of columns; trackBy: trackByIndex" [style.width]="column.width">
+              <app-button
+                variant="ghost"
+                size="sm"
+                [disabled]="!sortable || !column.sortable"
+                (clicked)="onSort(column)"
+              >
+                {{ column.label }}
+                <span *ngIf="sortable && column.sortable && sort?.key === column.key">
+                  {{ sort?.direction === 'asc' ? '↑' : '↓' }}
+                </span>
+              </app-button>
+            </th>
+            <th *ngIf="showActions" class="text-right">Acciones</th>
+          </tr>
+          <tr *ngIf="showFilters">
+            <th *ngFor="let column of columns; trackBy: trackByIndex">
+              <app-input
+                *ngIf="column.filterable"
+                [placeholder]="column.label"
+                size="sm"
+                (valueChanged)="onFilter(column, $event)"
+              ></app-input>
+            </th>
+            <th *ngIf="showActions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows; trackBy: trackByIndex">
+            <td
+              *ngFor="let column of columns; trackBy: trackByIndex"
+              [ngClass]="resolveAlign(column.align)"
+            >
+              <span *ngIf="column.type !== 'badge'">{{ row[column.key] }}</span>
+              <span *ngIf="column.type === 'badge'" class="badge badge-outline">
+                {{ row[column.key] }}
+              </span>
+            </td>
+            <td *ngIf="showActions" class="text-right">
+              <div class="flex justify-end gap-2">
+                <app-button
+                  *ngFor="let action of actions; trackBy: trackByIndex"
+                  size="sm"
+                  [variant]="action.variant ?? 'ghost'"
+                  (clicked)="onAction(action, row)"
+                >
+                  {{ action.label }}
+                </app-button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="rows.length === 0">
+            <td [attr.colspan]="columns.length + (showActions ? 1 : 0)">
+              <div class="py-10 text-center text-sm text-neutral/60">
+                {{ emptyStateText }}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="flex flex-wrap items-center justify-between gap-3"
+      *ngIf="showPagination && pagination"
+    >
+      <div class="text-sm text-neutral/60">
+        Mostrando pagina {{ pagination.page }} de {{ totalPages }}
+      </div>
+      <div class="join">
+        <app-button size="sm" (clicked)="onPageChange(pagination.page - 1)">Anterior</app-button>
+        <app-button size="sm" variant="secondary">{{ pagination.page }}</app-button>
+        <app-button size="sm" (clicked)="onPageChange(pagination.page + 1)">Siguiente</app-button>
+      </div>
+      <select
+        class="select select-bordered select-sm"
+        [value]="pagination.pageSize"
+        (change)="onPageSizeChange($any($event.target).value)"
+      >
+        <option *ngFor="let size of pagination.pageSizeOptions ?? [10, 25, 50]" [value]="size">
+          {{ size }} por pagina
+        </option>
+      </select>
+    </div>
+  </div>
+</section>

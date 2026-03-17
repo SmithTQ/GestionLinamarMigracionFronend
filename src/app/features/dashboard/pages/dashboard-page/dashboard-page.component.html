@@ -1,0 +1,164 @@
+<app-page-container>
+  <section class="flex flex-wrap items-center justify-between gap-4">
+    <div class="space-y-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="badge badge-primary badge-outline">Bienvenido</span>
+        <span class="badge badge-secondary">Panel principal</span>
+      </div>
+      <h1 class="text-3xl font-semibold text-neutral">Modulos de operacion</h1>
+      <p class="text-sm text-neutral/70">
+        Selecciona un modulo para continuar con la gestion de la campana.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <app-button variant="secondary">Configurar</app-button>
+      <app-button>Crear campana</app-button>
+    </div>
+  </section>
+
+  <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body gap-3">
+        <div class="flex items-center justify-between">
+          <h2 class="card-title text-lg">Campanas</h2>
+          <span class="badge badge-primary badge-outline">8 activas</span>
+        </div>
+        <p class="text-sm text-neutral/70">
+          Administra campañas, fechas, volumenes y objetivos.
+        </p>
+        <div class="card-actions justify-end">
+          <app-button size="sm">Entrar</app-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body gap-3">
+        <div class="flex items-center justify-between">
+          <h2 class="card-title text-lg">Rutas</h2>
+          <span class="badge badge-secondary badge-outline">12 optimizadas</span>
+        </div>
+        <p class="text-sm text-neutral/70">
+          Crea rutas, optimiza recorridos y asigna conductores.
+        </p>
+        <div class="card-actions justify-end">
+          <app-button size="sm">Entrar</app-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body gap-3">
+        <div class="flex items-center justify-between">
+          <h2 class="card-title text-lg">Pedidos</h2>
+          <span class="badge badge-info badge-outline">1,284 hoy</span>
+        </div>
+        <p class="text-sm text-neutral/70">
+          Controla el estado, incidencias y cumplimiento.
+        </p>
+        <div class="card-actions justify-end">
+          <app-button size="sm">Entrar</app-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body gap-3">
+        <div class="flex items-center justify-between">
+          <h2 class="card-title text-lg">Administracion</h2>
+          <span class="badge badge-outline">Usuarios</span>
+        </div>
+        <p class="text-sm text-neutral/70">
+          Gestiona roles, permisos, zonas y parametros del sistema.
+        </p>
+        <div class="card-actions justify-end">
+          <app-button size="sm">Entrar</app-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body gap-3">
+        <div class="flex items-center justify-between">
+          <h2 class="card-title text-lg">Reportes</h2>
+          <span class="badge badge-outline">SLA y KPIs</span>
+        </div>
+        <p class="text-sm text-neutral/70">
+          Exporta reportes y analiza rendimiento operativo.
+        </p>
+        <div class="card-actions justify-end">
+          <app-button size="sm">Entrar</app-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body gap-3">
+        <div class="flex items-center justify-between">
+          <h2 class="card-title text-lg">Soporte</h2>
+          <span class="badge badge-outline">24/7</span>
+        </div>
+        <p class="text-sm text-neutral/70">
+          Accede a guias operativas y mesa de ayuda interna.
+        </p>
+        <div class="card-actions justify-end">
+          <app-button size="sm">Entrar</app-button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body gap-4">
+        <h2 class="text-lg font-semibold text-neutral">Resumen rapido</h2>
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-2xl border border-base-200 p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-neutral/50">Pedidos hoy</p>
+            <p class="text-2xl font-semibold text-neutral">1,284</p>
+            <p class="text-xs text-neutral/60">+12% vs ayer</p>
+          </div>
+          <div class="rounded-2xl border border-base-200 p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-neutral/50">Rutas activas</p>
+            <p class="text-2xl font-semibold text-neutral">42</p>
+            <p class="text-xs text-neutral/60">8 en optimizacion</p>
+          </div>
+          <div class="rounded-2xl border border-base-200 p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-neutral/50">SLA promedio</p>
+            <p class="text-2xl font-semibold text-neutral">92%</p>
+            <p class="text-xs text-neutral/60">Meta 95%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body gap-4">
+        <h2 class="text-lg font-semibold text-neutral">Accesos recientes</h2>
+        <div class="space-y-3 text-sm text-neutral/70">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="font-semibold text-neutral">Maria Torres</p>
+              <p>Supervision de rutas</p>
+            </div>
+            <span class="badge badge-outline">09:35</span>
+          </div>
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="font-semibold text-neutral">Jose Ramirez</p>
+              <p>Control de pedidos</p>
+            </div>
+            <span class="badge badge-outline">09:10</span>
+          </div>
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="font-semibold text-neutral">Ana Delgado</p>
+              <p>Administracion</p>
+            </div>
+            <span class="badge badge-outline">08:52</span>
+          </div>
+        </div>
+        <app-button variant="secondary" size="sm" [fullWidth]="true">Ver auditoria</app-button>
+      </div>
+    </div>
+  </section>
+</app-page-container>

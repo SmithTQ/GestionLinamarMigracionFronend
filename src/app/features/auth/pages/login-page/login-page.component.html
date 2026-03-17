@@ -1,0 +1,118 @@
+<div class="min-h-screen bg-base-200">
+  <div
+    class="mx-auto grid min-h-screen max-w-6xl grid-cols-1 gap-8 px-6 py-10 lg:grid-cols-[1.2fr_0.8fr]"
+  >
+    <section
+      class="relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-white via-indigo-50 to-emerald-50 p-10 shadow-2xl"
+      aria-label="Resumen de la plataforma"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <span class="badge badge-primary badge-lg px-4 py-3 text-xs font-semibold">
+          Linamar Logistics
+        </span>
+        <span class="badge badge-outline px-4 py-3 text-xs font-semibold">
+          Campana activa: Dia de la Madre
+        </span>
+      </div>
+
+      <div class="space-y-4">
+        <h1 class="text-4xl font-semibold leading-tight text-neutral">
+          Coordina miles de entregas con precision y control en tiempo real.
+        </h1>
+        <p class="text-base text-neutral/70">
+          Monitorea rutas, asigna conductores y asegura cada entrega con una
+          plataforma pensada para operaciones de alto volumen.
+        </p>
+      </div>
+
+      <div class="stats stats-vertical bg-white/80 shadow lg:stats-horizontal">
+        <div class="stat">
+          <div class="stat-title text-neutral/60">Pedidos hoy</div>
+          <div class="stat-value text-primary">1,284</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title text-neutral/60">Entregas en ruta</div>
+          <div class="stat-value text-primary">327</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title text-neutral/60">Conductores activos</div>
+          <div class="stat-value text-primary">58</div>
+        </div>
+      </div>
+
+      <div class="grid gap-3">
+        <div class="alert bg-white/80 text-neutral shadow">
+          Mapa de entregas en vivo con alertas inteligentes.
+        </div>
+        <div class="alert bg-white/80 text-neutral shadow">
+          Carga rapida de pedidos y validacion automatica.
+        </div>
+        <div class="alert bg-white/80 text-neutral shadow">
+          Reportes listos para cierre de campana.
+        </div>
+      </div>
+    </section>
+
+    <section class="flex items-center justify-center" aria-label="Acceso de operadores">
+      <div class="card w-full max-w-md bg-base-100 shadow-2xl">
+        <div class="card-body gap-6">
+          <div class="space-y-2">
+            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Acceso operadores
+            </div>
+            <h2 class="text-3xl font-semibold text-neutral">Inicia sesion</h2>
+            <p class="text-sm text-neutral/70">Usa tu correo corporativo para continuar.</p>
+          </div>
+
+          <form class="space-y-4" aria-label="Formulario de inicio de sesion" novalidate>
+            <app-input
+              label="Correo corporativo"
+              type="email"
+              placeholder="nombre@empresa.com"
+            ></app-input>
+
+            <div class="flex flex-col gap-2">
+              <span class="text-sm font-medium text-neutral">Contrasena</span>
+              <div class="join w-full">
+                <app-input
+                  type="password"
+                  placeholder="Ingresa tu clave"
+                  inputClass="join-item"
+                ></app-input>
+                <app-button class="join-item" type="button" variant="ghost" size="sm">
+                  Mostrar
+                </app-button>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <label class="label cursor-pointer gap-3">
+                <input type="checkbox" checked class="checkbox checkbox-primary" />
+                <span class="label-text text-sm text-neutral">Recordarme en este equipo</span>
+              </label>
+              <app-button type="button" variant="ghost" size="sm">Olvide mi contrasena</app-button>
+            </div>
+
+            <div class="grid gap-3">
+              <app-button type="button" [fullWidth]="true">Acceder al panel</app-button>
+              <app-button type="button" variant="secondary" [fullWidth]="true">
+                Entrar con Microsoft 365
+              </app-button>
+            </div>
+
+            <p class="text-center text-xs text-neutral/60">
+              Al continuar aceptas las politicas de seguridad y uso interno.
+            </p>
+          </form>
+
+          <div class="space-y-2 text-center text-xs text-neutral/60">
+            <div class="badge badge-secondary badge-outline mx-auto px-4 py-3 text-[10px]">
+              Acceso seguro | SSO disponible
+            </div>
+            <p>Soporte 24/7: soporte&#64;linamar.com</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

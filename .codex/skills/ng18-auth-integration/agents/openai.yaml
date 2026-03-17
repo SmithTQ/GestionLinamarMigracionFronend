@@ -1,0 +1,4 @@
+interface:
+  display_name: "Angular 18 Auth"
+  short_description: "Login, refresh, logout with signals, interceptors, guards."
+  default_prompt: "Implement or refactor auth flows in Angular 18 with signals and HttpClient."

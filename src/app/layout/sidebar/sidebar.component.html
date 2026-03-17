@@ -1,0 +1,53 @@
+<aside
+  class="flex min-h-screen flex-col border-r border-base-200 bg-base-100 px-3 py-6 transition-all duration-200"
+  [ngClass]="{ 'w-64': !collapsed, 'w-20': collapsed }"
+>
+  <div class="flex items-center gap-3 px-2">
+    <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-xs font-bold text-white">
+      LM
+    </div>
+    <div class="flex flex-1 items-center justify-between" *ngIf="!collapsed">
+      <div>
+        <p class="text-sm font-semibold text-neutral">Linamar Ops</p>
+        <p class="text-xs text-neutral/60">Centro de control</p>
+      </div>
+      <app-button variant="ghost" size="sm" (clicked)="toggle()">Ocultar</app-button>
+    </div>
+    <app-button
+      variant="ghost"
+      size="sm"
+      *ngIf="collapsed"
+      (clicked)="toggle()"
+    >
+      Menu
+    </app-button>
+  </div>
+
+  <div class="mt-6 flex flex-col gap-1" *ngIf="items.length > 0; else emptyMenu">
+    <a
+      *ngFor="let item of items"
+      class="group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium text-neutral transition hover:bg-base-200"
+      [routerLink]="item.route"
+      routerLinkActive="bg-base-200 text-neutral shadow-sm"
+      [attr.title]="collapsed ? item.label : null"
+    >
+      <span
+        class="flex h-9 w-9 items-center justify-center rounded-xl bg-base-200 text-[11px] font-bold text-neutral"
+      >
+        {{ item.icon }}
+      </span>
+      <span *ngIf="!collapsed">{{ item.label }}</span>
+    </a>
+  </div>
+  <ng-template #emptyMenu>
+    <p class="px-3 text-xs text-neutral/60">No hay modulos configurados.</p>
+  </ng-template>
+
+  <div class="mt-auto px-2" *ngIf="!collapsed">
+    <div class="rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/10 to-transparent p-4">
+      <p class="text-xs uppercase tracking-[0.2em] text-neutral/50">Estado</p>
+      <p class="text-sm font-semibold text-neutral">Campana activa</p>
+      <p class="text-xs text-neutral/60">Madre 2026</p>
+    </div>
+  </div>
+</aside>

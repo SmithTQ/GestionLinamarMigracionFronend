@@ -1,0 +1,3 @@
+display_name: "Angular 18 Feature"
+short_description: "Feature slice with routes, services, signals"
+default_prompt: "Add a new feature screen using Angular 18 standalone patterns."

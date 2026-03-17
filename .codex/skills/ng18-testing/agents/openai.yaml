@@ -1,0 +1,4 @@
+interface:
+  display_name: "Angular 18 Testing"
+  short_description: "Unit tests for Angular 18 services and components"
+  default_prompt: "Add or update unit tests for Angular 18 components or services."
