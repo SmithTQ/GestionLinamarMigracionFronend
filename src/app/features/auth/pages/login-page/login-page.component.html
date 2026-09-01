@@ -4,11 +4,17 @@
       class="relative flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-8 py-16 text-white"
       aria-label="Presentacion de la plataforma"
     >
-      <div class="pointer-events-none absolute -left-24 top-12 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
-      <div class="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-sky-500/10 blur-3xl"></div>
+      <div
+        class="pointer-events-none absolute -left-24 top-12 h-64 w-64 rounded-full bg-white/10 blur-3xl"
+      ></div>
+      <div
+        class="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-sky-500/10 blur-3xl"
+      ></div>
 
       <div class="flex w-full max-w-md flex-col items-center text-center">
-        <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 shadow-lg">
+        <div
+          class="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 shadow-lg"
+        >
           <svg viewBox="0 0 24 24" class="h-8 w-8 text-white">
             <path
               fill="currentColor"
@@ -41,7 +47,10 @@
       </div>
     </section>
 
-    <section class="flex items-center justify-center bg-white px-6 py-16 text-slate-900" aria-label="Acceso">
+    <section
+      class="flex items-center justify-center bg-white px-6 py-16 text-slate-900"
+      aria-label="Acceso"
+    >
       <div class="card w-full max-w-md border border-slate-200 bg-white shadow-2xl">
         <div class="card-body gap-6 p-8">
           <div class="space-y-2">
@@ -89,10 +98,14 @@
                 />
                 <span class="label-text text-sm text-slate-700">Recordarme</span>
               </label>
-              <app-button type="button" variant="ghost" size="sm">Olvidaste tu contrasena?</app-button>
+              <app-button type="button" variant="ghost" size="sm"
+                >Olvidaste tu contrasena?</app-button
+              >
             </div>
 
-            <p class="text-sm text-error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+            @if (errorMessage()) {
+              <p class="text-sm text-error">{{ errorMessage() }}</p>
+            }
 
             <div class="grid gap-3">
               <app-button
@@ -110,7 +123,12 @@
 
             <div class="flex flex-wrap items-center justify-center gap-1 text-xs text-slate-500">
               <span>No tienes cuenta?</span>
-              <app-button type="button" variant="ghost" size="sm" class="px-1 font-semibold text-primary">
+              <app-button
+                type="button"
+                variant="ghost"
+                size="sm"
+                class="px-1 font-semibold text-primary"
+              >
                 Crear cuenta
               </app-button>
             </div>

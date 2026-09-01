@@ -7,17 +7,11 @@
   [disabled]="disabled"
   (click)="onClick()"
 >
-  <app-icon
-    *ngIf="icon && iconPosition === 'left'"
-    [name]="icon"
-    [size]="iconSize"
-    className="text-current"
-  ></app-icon>
+  @if (icon && iconPosition === 'left') {
+    <app-icon [name]="icon" [size]="iconSize" className="text-current"></app-icon>
+  }
   <ng-content></ng-content>
-  <app-icon
-    *ngIf="icon && iconPosition === 'right'"
-    [name]="icon"
-    [size]="iconSize"
-    className="text-current"
-  ></app-icon>
+  @if (icon && iconPosition === 'right') {
+    <app-icon [name]="icon" [size]="iconSize" className="text-current"></app-icon>
+  }
 </button>

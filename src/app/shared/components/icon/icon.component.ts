@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 
 @Component({
   selector: 'app-icon',
   standalone: true,
-  imports: [NgClass, LucideAngularModule],
+  imports: [NgClass, LucideDynamicIcon],
   templateUrl: './icon.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

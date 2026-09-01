@@ -1,24 +1,23 @@
-<div
-  *ngIf="isOpen"
-  #menuRef
-  class="fixed z-50 min-w-[200px] rounded-xl border border-base-200 bg-base-100 p-2 shadow-xl"
-  [style.left.px]="position.x"
-  [style.top.px]="position.y"
-  (click)="$event.stopPropagation()"
->
-  <button
-    type="button"
-    *ngFor="let option of options"
-    class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-base-200 disabled:cursor-not-allowed disabled:opacity-60"
-    [disabled]="option.disabled"
-    (click)="onAction(option)"
+@if (isOpen) {
+  <div
+    #menuRef
+    class="fixed z-50 min-w-[200px] rounded-xl border border-base-200 bg-base-100 p-2 shadow-xl"
+    [style.left.px]="position.x"
+    [style.top.px]="position.y"
+    (click)="$event.stopPropagation()"
   >
-    <app-icon
-      *ngIf="option.icon"
-      [name]="option.icon"
-      [size]="16"
-      className="text-neutral"
-    ></app-icon>
-    <span class="text-neutral">{{ option.label }}</span>
-  </button>
-</div>
+    @for (option of options; track option) {
+      <button
+        type="button"
+        class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-base-200 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="option.disabled"
+        (click)="onAction(option)"
+      >
+        @if (option.icon) {
+          <app-icon [name]="option.icon" [size]="16" className="text-neutral"></app-icon>
+        }
+        <span class="text-neutral">{{ option.label }}</span>
+      </button>
+    }
+  </div>
+}

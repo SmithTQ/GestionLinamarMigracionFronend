@@ -1,10 +1,10 @@
 ﻿import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [NgIf, NgClass],
+  imports: [NgClass],
   templateUrl: './modal.component.html',
   styleUrl: './modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

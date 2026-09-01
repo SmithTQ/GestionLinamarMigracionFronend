@@ -1,12 +1,12 @@
 ﻿import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IconComponent } from '@shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [NgClass, NgFor, NgIf, RouterLink, RouterLinkActive, IconComponent],
+  imports: [NgClass, RouterLink, RouterLinkActive, IconComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

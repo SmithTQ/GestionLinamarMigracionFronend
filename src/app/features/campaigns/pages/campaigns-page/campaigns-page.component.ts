@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { PageContainerComponent } from '@layout/components/page-container/page-container.component';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import {
   TableColumn,
   TableComponent,
@@ -23,8 +23,6 @@ import { Campaign } from '@features/campaigns/models/campaign.model';
     InputComponent,
     ModalComponent,
     NgClass,
-    NgFor,
-    NgIf,
   ],
   templateUrl: './campaigns-page.component.html',
   styleUrls: ['./campaigns-page.component.scss'],
@@ -64,10 +62,7 @@ export class CampaignsPageComponent {
   ]);
   readonly selectedProductId = signal<string | null>(null);
   readonly productError = signal<string | null>(null);
-  readonly deliveryScheduleOptions = signal<string[]>([
-    '09:00 - 13:00',
-    '13:00 - 18:00',
-  ]);
+  readonly deliveryScheduleOptions = signal<string[]>(['09:00 - 13:00', '13:00 - 18:00']);
   readonly scheduleOptionsError = signal<string | null>(null);
 
   readonly dynamicFields = signal<
@@ -200,11 +195,7 @@ export class CampaignsPageComponent {
     this.dynamicFields.update((fields) => fields.filter((_, i) => i !== index));
   }
 
-  updateField(
-    index: number,
-    key: 'label' | 'type' | 'required',
-    value: string | boolean,
-  ): void {
+  updateField(index: number, key: 'label' | 'type' | 'required', value: string | boolean): void {
     this.dynamicFields.update((fields) =>
       fields.map((field, i) => {
         if (i !== index) {
@@ -244,10 +235,6 @@ export class CampaignsPageComponent {
     this.fieldLabelError.set(null);
     this.scheduleOptionsError.set(null);
     this.closeFormBuilder();
-  }
-
-  trackByIndex(index: number): number {
-    return index;
   }
 
   private formatStatus(status: string): string {
@@ -293,9 +280,7 @@ export class CampaignsPageComponent {
   addOption(fieldIndex: number): void {
     this.dynamicFields.update((fields) =>
       fields.map((field, i) =>
-        i === fieldIndex
-          ? { ...field, options: [...(field.options ?? ['']), ''] }
-          : field,
+        i === fieldIndex ? { ...field, options: [...(field.options ?? ['']), ''] } : field,
       ),
     );
   }
@@ -350,11 +335,7 @@ export class CampaignsPageComponent {
     this.products.update((items) => items.filter((_, i) => i !== index));
   }
 
-  updateProduct(
-    index: number,
-    key: 'name' | 'image' | 'price' | 'fileName',
-    value: string,
-  ): void {
+  updateProduct(index: number, key: 'name' | 'image' | 'price' | 'fileName', value: string): void {
     this.products.update((items) =>
       items.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
     );

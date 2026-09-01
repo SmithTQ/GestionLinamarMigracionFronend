@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output, DOCUMENT } from '@angular/core';
+
 import { computed, inject, signal } from '@angular/core';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { IconComponent } from '@shared/components/icon/icon.component';

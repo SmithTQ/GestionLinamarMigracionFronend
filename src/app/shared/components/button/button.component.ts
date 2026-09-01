@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { IconComponent } from '@shared/components/icon/icon.component';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline';
@@ -7,7 +7,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline';
 @Component({
   selector: 'app-button',
   standalone: true,
-  imports: [NgClass, NgIf, IconComponent],
+  imports: [NgClass, IconComponent],
   templateUrl: './button.component.html',
   styleUrl: './button.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

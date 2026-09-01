@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { ButtonComponent, ButtonVariant } from '@shared/components/button/button.component';
 import { InputComponent } from '@shared/components/input/input.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
@@ -40,15 +40,7 @@ export interface TablePagination {
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [
-    NgFor,
-    NgIf,
-    NgClass,
-    ButtonComponent,
-    InputComponent,
-    IconComponent,
-    ContextMenuComponent,
-  ],
+  imports: [NgClass, ButtonComponent, InputComponent, IconComponent, ContextMenuComponent],
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,7 +62,10 @@ export class TableComponent {
   @Input() pagination?: TablePagination;
   @Input() sort?: { key: string; direction: 'asc' | 'desc' };
 
-  @Output() actionClicked = new EventEmitter<{ action: TableAction; row: Record<string, unknown> }>();
+  @Output() actionClicked = new EventEmitter<{
+    action: TableAction;
+    row: Record<string, unknown>;
+  }>();
   @Output() sortChanged = new EventEmitter<{ key: string; direction: 'asc' | 'desc' }>();
   @Output() filterChanged = new EventEmitter<{ key: string; value: string }>();
   @Output() pageChanged = new EventEmitter<number>();
@@ -85,10 +80,6 @@ export class TableComponent {
       return 1;
     }
     return Math.max(1, Math.ceil(this.pagination.total / this.pagination.pageSize));
-  }
-
-  trackByIndex(index: number): number {
-    return index;
   }
 
   onSort(column: TableColumn): void {

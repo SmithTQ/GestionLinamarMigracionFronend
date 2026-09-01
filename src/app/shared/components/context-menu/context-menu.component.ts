@@ -8,7 +8,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { IconComponent } from '@shared/components/icon/icon.component';
 
 export interface ContextMenuOption {
@@ -21,7 +21,7 @@ export interface ContextMenuOption {
 @Component({
   selector: 'app-context-menu',
   standalone: true,
-  imports: [NgIf, NgFor, IconComponent],
+  imports: [IconComponent],
   templateUrl: './context-menu.component.html',
   styleUrl: './context-menu.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
