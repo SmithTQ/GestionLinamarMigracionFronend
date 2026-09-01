@@ -1,9 +1,23 @@
 <button
   class="btn"
   [ngClass]="buttonClass"
+  [class]="extraClass"
   [attr.type]="type"
+  [attr.aria-label]="ariaLabel || null"
   [disabled]="disabled"
   (click)="onClick()"
 >
+  <app-icon
+    *ngIf="icon && iconPosition === 'left'"
+    [name]="icon"
+    [size]="iconSize"
+    className="text-current"
+  ></app-icon>
   <ng-content></ng-content>
+  <app-icon
+    *ngIf="icon && iconPosition === 'right'"
+    [name]="icon"
+    [size]="iconSize"
+    className="text-current"
+  ></app-icon>
 </button>

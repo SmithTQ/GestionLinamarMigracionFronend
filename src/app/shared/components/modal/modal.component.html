@@ -1,5 +1,15 @@
 <div class="modal modal-open" *ngIf="isOpen">
-  <div class="modal-box">
+  <div
+    class="modal-box"
+    [ngClass]="{
+      'max-w-md': size === 'sm',
+      'max-w-2xl': size === 'md',
+      'max-w-4xl': size === 'lg',
+      'max-w-6xl': size === 'xl',
+      'w-11/12': size === 'full',
+      'max-w-none': size === 'full'
+    }"
+  >
     <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4" (click)="close()">
       X
     </button>

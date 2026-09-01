@@ -2,9 +2,15 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { ButtonComponent, ButtonVariant } from '@shared/components/button/button.component';
 import { InputComponent } from '@shared/components/input/input.component';
+import { IconComponent } from '@shared/components/icon/icon.component';
+import {
+  ContextMenuComponent,
+  ContextMenuOption,
+} from '@shared/components/context-menu/context-menu.component';
 
 export type TableColumnAlign = 'left' | 'center' | 'right';
 export type TableColumnType = 'text' | 'badge' | 'date' | 'currency';
+export type TableSize = 'xs' | 'sm' | 'md' | 'lg';
 
 export interface TableColumn {
   key: string;
@@ -20,6 +26,8 @@ export interface TableAction {
   id: string;
   label: string;
   variant?: ButtonVariant;
+  icon?: string;
+  iconPosition?: 'left' | 'right';
 }
 
 export interface TablePagination {
@@ -32,7 +40,15 @@ export interface TablePagination {
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, ButtonComponent, InputComponent],
+  imports: [
+    NgFor,
+    NgIf,
+    NgClass,
+    ButtonComponent,
+    InputComponent,
+    IconComponent,
+    ContextMenuComponent,
+  ],
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,8 +63,10 @@ export class TableComponent {
   @Input() showFilters = true;
   @Input() showActions = true;
   @Input() showPagination = true;
+  @Input() useContextMenuActions = false;
   @Input() emptyStateText = 'No hay registros disponibles.';
   @Input() sortable = true;
+  @Input() size: TableSize = 'md';
   @Input() pagination?: TablePagination;
   @Input() sort?: { key: string; direction: 'asc' | 'desc' };
 
@@ -57,6 +75,10 @@ export class TableComponent {
   @Output() filterChanged = new EventEmitter<{ key: string; value: string }>();
   @Output() pageChanged = new EventEmitter<number>();
   @Output() pageSizeChanged = new EventEmitter<number>();
+
+  contextMenuOpen = false;
+  contextMenuPosition = { x: 0, y: 0 };
+  contextMenuRow: Record<string, unknown> | null = null;
 
   get totalPages(): number {
     if (!this.pagination) {
@@ -89,6 +111,37 @@ export class TableComponent {
     this.actionClicked.emit({ action, row });
   }
 
+  onRowContextMenu(event: MouseEvent, row: Record<string, unknown>): void {
+    if (!this.useContextMenuActions || !this.showActions || !this.actions.length) {
+      return;
+    }
+    event.preventDefault();
+    const menuWidth = 220;
+    const menuHeight = Math.max(44, this.actions.length * 36 + 16);
+    const maxX = Math.max(8, window.innerWidth - menuWidth - 8);
+    const maxY = Math.max(8, window.innerHeight - menuHeight - 8);
+
+    this.contextMenuPosition = {
+      x: Math.min(event.clientX, maxX),
+      y: Math.min(event.clientY, maxY),
+    };
+    this.contextMenuRow = row;
+    this.contextMenuOpen = true;
+  }
+
+  closeContextMenu(): void {
+    this.contextMenuOpen = false;
+    this.contextMenuRow = null;
+  }
+
+  onContextMenuAction(action: ContextMenuOption): void {
+    if (!this.contextMenuRow) {
+      return;
+    }
+    this.onAction(action as TableAction, this.contextMenuRow);
+    this.closeContextMenu();
+  }
+
   onPageChange(next: number): void {
     if (!this.pagination) {
       return;
@@ -113,5 +166,9 @@ export class TableComponent {
       return 'text-right';
     }
     return 'text-left';
+  }
+
+  isContextMenuRow(row: Record<string, unknown>): boolean {
+    return this.contextMenuOpen && this.contextMenuRow === row;
   }
 }

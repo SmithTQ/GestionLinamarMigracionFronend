@@ -1,3 +1,11 @@
 :host {
   display: block;
 }
+
+:host ::ng-deep .login-form .label-text {
+  color: #334155;
+}
+
+:host ::ng-deep .login-form .label-text-alt {
+  color: #64748b;
+}

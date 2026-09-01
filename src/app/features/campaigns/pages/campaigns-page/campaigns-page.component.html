@@ -1,0 +1,481 @@
+<app-page-container>
+  <section class="flex flex-wrap items-center justify-between gap-4">
+    <div class="space-y-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="badge badge-primary badge-outline">Campanas</span>
+        <span class="badge badge-secondary">Planificacion operativa</span>
+      </div>
+      <h1 class="text-3xl font-semibold text-neutral">Gestion de campanas</h1>
+      <p class="text-sm text-neutral/70">
+        Controla calendario, presupuesto y resultados de cada campana activa.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <app-button icon="plus" (clicked)="openModal()">Crear Campana</app-button>
+    </div>
+  </section>
+
+  <app-table
+    title="Campanas registradas"
+    description="Resumen operativo con pedidos, entregas y total obtenido."
+    size="xs"
+    [columns]="columns"
+    [rows]="rows()"
+    [actions]="actions"
+    [useContextMenuActions]="true"
+    [pagination]="pagination"
+    [showFilters]="true"
+    [showActions]="true"
+    [showPagination]="true"
+  ></app-table>
+
+  <app-modal [isOpen]="isModalOpen()" (closed)="closeModal()">
+    <div class="space-y-4">
+      <div>
+        <h3 class="text-lg font-semibold text-neutral">Nueva campana</h3>
+        <p class="text-sm text-neutral/70">
+          Completa la informacion principal para registrar la campana.
+        </p>
+      </div>
+      <div class="grid gap-3 md:grid-cols-2">
+        <app-input
+          label="Nombre"
+          placeholder="Ej: Madre 2026"
+          [value]="name()"
+          [error]="nameError()"
+          (valueChanged)="name.set($event)"
+        ></app-input>
+        <app-input
+          label="Presupuesto"
+          placeholder="S/ 12,000"
+          type="number"
+          [value]="budget()"
+          (valueChanged)="budget.set($event)"
+        ></app-input>
+        <app-input
+          label="Fecha inicio"
+          type="date"
+          [value]="startDate()"
+          (valueChanged)="startDate.set($event)"
+        ></app-input>
+        <app-input
+          label="Fecha fin"
+          type="date"
+          [value]="endDate()"
+          (valueChanged)="endDate.set($event)"
+        ></app-input>
+        <label class="form-control w-full md:col-span-2">
+          <span class="label-text text-sm font-medium text-neutral">Estado</span>
+          <select
+            class="select select-bordered w-full"
+            [value]="status()"
+            (change)="status.set($any($event.target).value)"
+          >
+            <option value="active">Activa</option>
+            <option value="paused">Pausada</option>
+            <option value="draft">Borrador</option>
+            <option value="completed">Finalizada</option>
+          </select>
+        </label>
+      </div>
+      <div class="flex flex-wrap justify-end gap-2">
+        <app-button variant="secondary" (clicked)="closeModal()">Cancelar</app-button>
+        <app-button (clicked)="createCampaign()">Crear campana</app-button>
+      </div>
+    </div>
+  </app-modal>
+
+  <app-modal [isOpen]="isConfirmationOpen()" (closed)="closeConfirmation()">
+    <div class="space-y-3">
+      <h3 class="text-lg font-semibold text-neutral">Campana registrada</h3>
+      <p class="text-sm text-neutral/70">
+        La campana se registro correctamente. Ahora puedes crear el formulario dinamico de
+        pedidos.
+      </p>
+      <div class="flex flex-wrap justify-end gap-2">
+        <app-button variant="secondary" (clicked)="closeConfirmation()">Cerrar</app-button>
+        <app-button icon="plus" (clicked)="openFormBuilder()">Crear formulario</app-button>
+      </div>
+    </div>
+  </app-modal>
+
+  <app-modal [isOpen]="isFormBuilderOpen()" size="full" (closed)="closeFormBuilder()">
+    <div class="space-y-4">
+      <div>
+        <h3 class="text-lg font-semibold text-neutral">Formulario de pedidos</h3>
+        <p class="text-sm text-neutral/70">
+          Campos fijos y campos variables para la campana
+          {{ lastCreatedCampaignId() || '' }}.
+        </p>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-[3fr_2fr]">
+        <div class="space-y-6">
+          <div class="collapse collapse-arrow rounded-2xl border border-base-200 bg-base-100">
+            <input type="checkbox" checked />
+            <div class="collapse-title">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-neutral">Campos fijos</p>
+                  <p class="text-xs text-neutral/60">Campos por defecto para todas las campanas.</p>
+                </div>
+                <span class="badge badge-outline">{{ products().length }} items</span>
+              </div>
+            </div>
+            <div class="collapse-content">
+              <div class="space-y-4 pt-1">
+                <div class="pt-3">  
+                  <div class="mt-2 rounded-2xl border border-base-200 bg-base-100 p-3">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-sm font-semibold text-neutral">Detalle</p>
+                        <p class="text-xs text-neutral/60">
+                          Productos disponibles para la campana (el cliente elige 1).
+                        </p>
+                      </div>
+                      <app-button size="sm" variant="outline" icon="plus" (clicked)="addProduct()">
+                        Agregar
+                      </app-button>
+                    </div>
+                    <p class="mt-2 text-xs text-error" *ngIf="productError()">{{ productError() }}</p>
+                    <div class="mt-3 grid gap-3">
+                      <div
+                        *ngFor="let product of products(); let i = index; trackBy: trackByIndex"
+                        class="grid gap-3 rounded-2xl border border-base-200 bg-base-100 p-3 md:grid-cols-3"
+                      >
+                        <app-input
+                          label="Nombre de detalle"
+                          [value]="product.name"
+                          (valueChanged)="updateProduct(i, 'name', $event)"
+                        ></app-input>
+                        <label class="form-control w-full">
+                          <span class="label-text mb-1 text-sm font-medium text-neutral">Imagen</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            class="file-input file-input-bordered w-full"
+                            (change)="onProductFileChange(i, $any($event.target).files)"
+                          />
+                          <span class="label-text-alt text-xs text-neutral/60" *ngIf="product.fileName">
+                            {{ product.fileName }}
+                          </span>
+                        </label>
+                        <app-input
+                          label="Precio"
+                          type="number"
+                          placeholder="S/ 0.00"
+                          [value]="product.price"
+                          (valueChanged)="updateProduct(i, 'price', $event)"
+                        ></app-input>
+                        <app-button size="sm" variant="ghost" icon="x" (clicked)="removeProduct(i)">
+                          Quitar
+                        </app-button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-3">
+                  <div class="mt-2 rounded-2xl border border-base-200 bg-base-100 p-3">
+                    <p class="text-sm font-semibold text-neutral">Direccion o ubicacion</p>
+                    <p class="text-xs text-neutral/60">El usuario marcara la ubicacion en el mapa.</p>
+                    <div
+                      class="mt-3 flex h-40 items-center justify-center rounded-2xl border border-dashed border-base-300 bg-base-200 text-xs text-neutral/60"
+                    >
+                      Mapa interactivo (placeholder)
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-3">
+                  <div class="mt-2 rounded-2xl border border-base-200 bg-base-100 p-3">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <p class="text-sm font-semibold text-neutral">Horario de entrega</p>
+                        <p class="text-xs text-neutral/60">
+                          Opciones que el cliente podra seleccionar.
+                        </p>
+                      </div>
+                      <app-button
+                        size="sm"
+                        variant="outline"
+                        icon="plus"
+                        (clicked)="addScheduleOption()"
+                      >
+                        Agregar
+                      </app-button>
+                    </div>
+                    <p class="mt-2 text-xs text-error" *ngIf="scheduleOptionsError()">
+                      {{ scheduleOptionsError() }}
+                    </p>
+                    <div class="mt-3 grid gap-2">
+                      <div
+                        *ngFor="
+                          let option of deliveryScheduleOptions();
+                          let i = index;
+                          trackBy: trackByIndex
+                        "
+                        class="flex items-center gap-2"
+                      >
+                        <app-input
+                          placeholder="Ej: 09:00 - 13:00"
+                          [value]="option"
+                          (valueChanged)="updateScheduleOption(i, $event)"
+                        ></app-input>
+                        <app-button
+                          size="sm"
+                          variant="ghost"
+                          icon="x"
+                          (clicked)="removeScheduleOption(i)"
+                        >
+                          Quitar
+                        </app-button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-3">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral/40">
+                    Resumen
+                  </p>
+                  <div
+                    class="mt-2 flex flex-wrap gap-2 rounded-2xl border border-dashed border-base-200 bg-base-100 p-3"
+                  >
+                    <span
+                      *ngFor="let field of fixedFields; trackBy: trackByIndex"
+                      class="badge badge-outline"
+                    >
+                      {{ field }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="collapse collapse-arrow rounded-2xl border border-base-200 bg-base-100">
+            <input type="checkbox" />
+            <div class="collapse-title">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-neutral">Campos variables</p>
+                  <p class="text-xs text-neutral/60">Agrega los campos que variaran por campana.</p>
+                </div>
+                <span class="badge badge-outline">{{ dynamicFields().length }} campos</span>
+              </div>
+            </div>
+            <div class="collapse-content">
+              <div class="space-y-3">
+                <div class="flex items-center justify-end">
+                  <app-button size="sm" variant="outline" icon="plus" (clicked)="addField()">
+                    Agregar campo
+                  </app-button>
+                </div>
+
+                <p class="text-xs text-error" *ngIf="fieldLabelError()">{{ fieldLabelError() }}</p>
+
+                <div class="grid gap-3">
+                  <div
+                    *ngIf="dynamicFields().length === 0"
+                    class="rounded-2xl border border-dashed border-base-200 bg-base-100 p-4 text-center text-xs text-neutral/60"
+                  >
+                    Aun no hay campos variables. Agrega el primero para continuar.
+                  </div>
+                  <div
+                    *ngFor="let field of dynamicFields(); let i = index; trackBy: trackByIndex"
+                    class="rounded-2xl border border-base-200 bg-base-100 p-3"
+                  >
+                    <div class="grid gap-3 md:grid-cols-3">
+                      <app-input
+                        label="Nombre del campo"
+                        placeholder="Ej: Numero de factura"
+                        [value]="field.label"
+                        (valueChanged)="updateField(i, 'label', $event)"
+                      ></app-input>
+                      <label class="form-control w-full">
+                        <span class="label-text mb-1 text-sm font-medium text-neutral">Tipo</span>
+                        <select
+                          class="select select-bordered w-full"
+                          [value]="field.type"
+                          (change)="updateField(i, 'type', $any($event.target).value)"
+                        >
+                          <option value="text">Texto</option>
+                          <option value="number">Numero</option>
+                          <option value="date">Fecha</option>
+                          <option value="select">Seleccion</option>
+                        </select>
+                      </label>
+                      <label class="form-control w-full">
+                        <span class="label-text mb-1 text-sm font-medium text-neutral">Requerido</span>
+                        <select
+                          class="select select-bordered w-full"
+                          [value]="field.required ? 'yes' : 'no'"
+                          (change)="updateField(i, 'required', $any($event.target).value === 'yes')"
+                        >
+                          <option value="no">No</option>
+                          <option value="yes">Si</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div class="mt-3 space-y-2" *ngIf="field.type === 'select'">
+                      <div class="flex items-center justify-between">
+                        <p class="text-xs font-semibold text-neutral/60">Opciones</p>
+                        <app-button size="sm" variant="outline" icon="plus" (clicked)="addOption(i)">
+                          Agregar opcion
+                        </app-button>
+                      </div>
+                      <div class="grid gap-2">
+                        <div
+                          *ngFor="let option of field.options ?? []; let o = index; trackBy: trackByIndex"
+                          class="flex items-center gap-2"
+                        >
+                          <app-input
+                            placeholder="Etiqueta de opcion"
+                            [value]="option"
+                            (valueChanged)="updateOption(i, o, $event)"
+                          ></app-input>
+                          <app-button
+                            size="sm"
+                            variant="ghost"
+                            icon="x"
+                            (clicked)="removeOption(i, o)"
+                          >
+                            Quitar
+                          </app-button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-3 flex justify-end">
+                      <app-button size="sm" variant="ghost" icon="x" (clicked)="removeField(i)">
+                        Quitar
+                      </app-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap justify-end gap-2">
+            <app-button variant="secondary" (clicked)="closeFormBuilder()">Cancelar</app-button>
+            <app-button (clicked)="saveFormDefinition()">Guardar formulario</app-button>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-base-200 bg-base-100 p-4 lg:sticky lg:top-6">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-neutral">Vista previa</p>
+              <p class="text-xs text-neutral/60">Asi vera el cliente el formulario.</p>
+            </div>
+            <span class="badge badge-outline">Previsualizacion</span>
+          </div>
+          <div class="mt-4 space-y-6">
+            <div class="rounded-2xl border border-base-200 bg-base-100 p-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">Detalle</p>
+              <div class="mt-3 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                *ngFor="let product of products(); trackBy: trackByIndex"
+                class="group flex items-center gap-3 rounded-2xl border border-base-200 bg-base-100 p-3 text-left transition hover:border-primary/50 hover:shadow-sm"
+                [ngClass]="{
+                  'border-primary shadow-sm': selectedProductId() === product.id,
+                  'ring-1 ring-primary/30': selectedProductId() === product.id
+                }"
+                (click)="selectProduct(product.id)"
+              >
+                <div
+                  class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-base-200 text-xs text-neutral/60"
+                >
+                    <img
+                      *ngIf="product.image"
+                      [src]="product.image"
+                      alt="Producto"
+                      class="h-full w-full object-cover"
+                    />
+                    <span *ngIf="!product.image">IMG</span>
+                  </div>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-neutral">
+                    {{ product.name || 'Producto sin nombre' }}
+                  </p>
+                  <p class="text-xs text-neutral/60">S/ {{ product.price || '0.00' }}</p>
+                </div>
+              </button>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-base-200 bg-base-100 p-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">
+                Direccion o ubicacion
+              </p>
+              <div
+                class="mt-3 flex h-40 items-center justify-center rounded-2xl border border-dashed border-base-300 bg-base-200 text-xs text-neutral/60"
+              >
+                Mapa interactivo (placeholder)
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-base-200 bg-base-100 p-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">
+                Datos de entrega
+              </p>
+              <div class="mt-3 grid gap-3 md:grid-cols-2">
+                <app-input label="Remitente" placeholder="Nombre completo"></app-input>
+                <app-input label="Telef. Remitente" placeholder="999 999 999"></app-input>
+                <app-input label="Destinatario" placeholder="Nombre completo"></app-input>
+                <app-input label="Telef. Destinatario" placeholder="999 999 999"></app-input>
+                <label class="form-control w-full">
+                  <span class="label-text text-sm font-medium text-neutral">Distrito</span>
+                  <select class="select select-bordered w-full" disabled>
+                    <option>Se cargara desde la base de datos</option>
+                  </select>
+                </label>
+                <app-input label="Direccion" placeholder="Av. Principal 123"></app-input>
+                <label class="form-control w-full">
+                  <span class="label-text text-sm font-medium text-neutral">Horario de entrega</span>
+                  <select class="select select-bordered w-full">
+                    <option
+                      *ngFor="let option of deliveryScheduleOptions(); trackBy: trackByIndex"
+                      [value]="option"
+                    >
+                      {{ option || 'Opcion sin nombre' }}
+                    </option>
+                    <option *ngIf="deliveryScheduleOptions().length === 0" disabled>
+                      Sin opciones configuradas
+                    </option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-base-200 bg-base-100 p-4" *ngIf="dynamicFields().length">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">
+                Campos variables
+              </p>
+              <div class="mt-3 grid gap-3 md:grid-cols-2">
+                <div
+                  *ngFor="let field of dynamicFields(); trackBy: trackByIndex"
+                  class="rounded-2xl border border-base-200 bg-base-100 p-3"
+                >
+                  <p class="text-xs font-semibold text-neutral/60">
+                    {{ field.label || 'Nuevo campo' }}
+                  </p>
+                  <div class="mt-2 text-xs text-neutral/50">
+                    Tipo: {{ field.type }} ? {{ field.required ? 'Requerido' : 'Opcional' }}
+                  </div>
+                  <div class="mt-2 text-xs text-neutral/50" *ngIf="field.type === 'select'">
+                    Opciones: {{ formatOptions(field.options) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-modal>
+</app-page-container>
+

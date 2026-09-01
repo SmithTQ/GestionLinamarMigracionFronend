@@ -1,0 +1,99 @@
+<app-page-container>
+  <section class="flex flex-wrap items-center justify-between gap-4">
+    <div class="space-y-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="badge badge-primary badge-outline">Componentes</span>
+        <span class="badge badge-secondary">UI Kit interno</span>
+      </div>
+      <h1 class="text-3xl font-semibold text-neutral">Catalogo de componentes</h1>
+      <p class="text-sm text-neutral/70">
+        Ejemplos listos para reutilizar de botones, tablas, formularios y modales.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <app-button icon="plus">Crear Campana</app-button>
+      <app-button variant="outline" icon="external-link" (clicked)="openModal()">
+        Ver modal
+      </app-button>
+    </div>
+  </section>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <app-card>
+      <div class="space-y-4">
+        <div>
+          <p class="text-sm font-semibold text-neutral">Botones</p>
+          <p class="text-xs text-neutral/60">Variantes primarias, secundarias y ghost.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <app-button>Primario</app-button>
+          <app-button variant="secondary">Secundario</app-button>
+          <app-button variant="outline">Outline</app-button>
+          <app-button variant="ghost">Ghost</app-button>
+        </div>
+      </div>
+    </app-card>
+
+    <app-card>
+      <div class="space-y-4">
+        <div>
+          <p class="text-sm font-semibold text-neutral">Inputs</p>
+          <p class="text-xs text-neutral/60">Con helper y estados de error.</p>
+        </div>
+        <div class="grid gap-3">
+          <app-input label="Nombre de campana" placeholder="Ej: Campana Madre" helper="Opcional" />
+          <app-input
+            label="Presupuesto"
+            placeholder="S/ 12,000"
+            type="number"
+            helper="Solo numeros"
+          />
+          <app-input
+            label="Responsable"
+            placeholder="Nombre completo"
+            error="Este campo es obligatorio"
+          />
+        </div>
+      </div>
+    </app-card>
+  </div>
+
+  <app-card>
+    <div class="space-y-4">
+      <div>
+        <p class="text-sm font-semibold text-neutral">Tabla</p>
+        <p class="text-xs text-neutral/60">Ejemplo del componente de tabla reutilizable.</p>
+      </div>
+      <app-table
+        [columns]="columns"
+        [rows]="rows()"
+        [showFilters]="true"
+        [showActions]="false"
+        [showPagination]="false"
+      ></app-table>
+    </div>
+  </app-card>
+
+  <app-card>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <p class="text-sm font-semibold text-neutral">Loading</p>
+        <p class="text-xs text-neutral/60">Indicador reutilizable para estados de carga.</p>
+      </div>
+      <app-loading label="Sincronizando datos"></app-loading>
+    </div>
+  </app-card>
+
+  <app-modal [isOpen]="isModalOpen()" (closed)="closeModal()">
+    <div class="space-y-3">
+      <h3 class="text-lg font-semibold text-neutral">Ejemplo de modal</h3>
+      <p class="text-sm text-neutral/70">
+        Usa este layout para confirmaciones, resúmenes o acciones críticas.
+      </p>
+      <div class="flex flex-wrap justify-end gap-2">
+        <app-button variant="secondary" (clicked)="closeModal()">Cerrar</app-button>
+        <app-button (clicked)="closeModal()">Listo</app-button>
+      </div>
+    </div>
+  </app-modal>
+</app-page-container>

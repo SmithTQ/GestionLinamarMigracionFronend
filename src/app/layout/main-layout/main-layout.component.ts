@@ -1,5 +1,6 @@
 ﻿import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { NgClass } from '@angular/common';
 import { HeaderComponent } from '@layout/header/header.component';
 import { SidebarComponent } from '@layout/sidebar/sidebar.component';
 import { FooterComponent } from '@layout/footer/footer.component';
@@ -7,7 +8,7 @@ import { FooterComponent } from '@layout/footer/footer.component';
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, SidebarComponent, FooterComponent],
+  imports: [RouterOutlet, NgClass, HeaderComponent, SidebarComponent, FooterComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

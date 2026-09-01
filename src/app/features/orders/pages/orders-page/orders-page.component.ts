@@ -30,9 +30,9 @@ export class OrdersPageComponent {
   ];
 
   readonly actions: TableAction[] = [
-    { id: 'view', label: 'Ver', variant: 'ghost' },
-    { id: 'edit', label: 'Editar', variant: 'ghost' },
-    { id: 'assign', label: 'Asignar', variant: 'outline' },
+    { id: 'view', label: 'Ver', variant: 'ghost', icon: 'eye' },
+    { id: 'edit', label: 'Editar', variant: 'ghost', icon: 'file-pen-line' },
+    { id: 'assign', label: 'Asignar', variant: 'outline', icon: 'user-check' },
   ];
 
   readonly rows = [
