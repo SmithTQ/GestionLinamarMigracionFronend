@@ -28,15 +28,7 @@ export class HeaderComponent {
   readonly user = this.authStore.user;
   readonly userName = computed(() => this.user()?.name ?? 'Invitado');
   readonly userRole = computed(() => {
-    const role = this.user()?.role ?? 'user';
-    switch (role) {
-      case 'admin':
-        return 'Administrador';
-      case 'manager':
-        return 'Operaciones';
-      default:
-        return 'Usuario';
-    }
+    return this.user()?.roles[0]?.name ?? 'Usuario';
   });
 
   constructor() {
@@ -51,8 +43,9 @@ export class HeaderComponent {
   }
 
   logout(): void {
-    this.authService.logout();
-    void this.router.navigate(['/auth/login']);
+    this.authService.logout().subscribe(() => {
+      void this.router.navigate(['/auth/login']);
+    });
   }
 
   private applyTheme(theme: 'linamar' | 'linamar-dark'): void {

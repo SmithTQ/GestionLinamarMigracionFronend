@@ -60,12 +60,12 @@
 
           <form class="login-form space-y-4" aria-label="Formulario de inicio de sesion" novalidate>
             <app-input
-              label="Correo electronico"
-              type="email"
+              label="Usuario o correo electronico"
+              type="text"
               placeholder="nombre@empresa.com"
               [inputClass]="baseInputClass"
-              [value]="email()"
-              (valueChanged)="email.set($event)"
+              [value]="login()"
+              (valueChanged)="login.set($event)"
             ></app-input>
 
             <div class="relative">
@@ -88,16 +88,7 @@
               </app-button>
             </div>
 
-            <div class="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
-              <label class="label cursor-pointer gap-3 py-0">
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-primary checkbox-sm"
-                  [checked]="rememberMe()"
-                  (change)="rememberMe.set($any($event.target).checked)"
-                />
-                <span class="label-text text-sm text-slate-700">Recordarme</span>
-              </label>
+            <div class="flex flex-wrap items-center justify-end gap-3 text-sm text-slate-600">
               <app-button type="button" variant="ghost" size="sm"
                 >Olvidaste tu contrasena?</app-button
               >

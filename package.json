@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "test": "ng test --watch=false --browsers=ChromeHeadlessNoSandbox",
     "lint": "ng lint",
     "format": "prettier \"src/**/*.{ts,html,scss}\" --write",
     "format:check": "prettier \"src/**/*.{ts,html,scss}\" --check"
@@ -21,7 +21,6 @@
     "@angular/platform-browser": "^21.2.22",
     "@angular/platform-browser-dynamic": "^21.2.22",
     "@angular/router": "^21.2.22",
-    "@lucide/angular": "^1.39.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

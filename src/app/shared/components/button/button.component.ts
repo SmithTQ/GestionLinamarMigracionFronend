@@ -16,6 +16,7 @@ export class ButtonComponent {
   @Input() variant: ButtonVariant = 'primary';
   @Input() type: 'button' | 'submit' = 'button';
   @Input() disabled = false;
+  @Input() loading = false;
   @Input() fullWidth = false;
   @Input() size: 'sm' | 'md' = 'md';
   @Input() icon?: string;
@@ -40,7 +41,7 @@ export class ButtonComponent {
   }
 
   onClick(): void {
-    if (!this.disabled) {
+    if (!this.disabled && !this.loading) {
       this.clicked.emit();
     }
   }

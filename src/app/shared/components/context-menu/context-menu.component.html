@@ -4,7 +4,6 @@
     class="fixed z-50 min-w-[200px] rounded-xl border border-base-200 bg-base-100 p-2 shadow-xl"
     [style.left.px]="position.x"
     [style.top.px]="position.y"
-    (click)="$event.stopPropagation()"
   >
     @for (option of options; track option) {
       <button

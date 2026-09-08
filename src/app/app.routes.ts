@@ -1,6 +1,8 @@
-﻿import { Routes } from '@angular/router';
-import { MainLayoutComponent } from '@layout/main-layout/main-layout.component';
+import { Routes } from '@angular/router';
+import { authGuard } from '@core/guards/auth.guard';
+import { permissionGuard } from '@core/guards/permission.guard';
 import { AuthLayoutComponent } from '@layout/auth-layout/auth-layout.component';
+import { MainLayoutComponent } from '@layout/main-layout/main-layout.component';
 
 export const routes: Routes = [
   {
@@ -11,6 +13,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: 'dashboard',
@@ -19,8 +22,9 @@ export const routes: Routes = [
       },
       {
         path: 'orders',
-        loadChildren: () =>
-          import('@features/orders/feature.routes').then((m) => m.ORDERS_ROUTES),
+        canActivate: [permissionGuard],
+        data: { permissions: ['orders.view'] },
+        loadChildren: () => import('@features/orders/feature.routes').then((m) => m.ORDERS_ROUTES),
       },
       {
         path: 'customers',
@@ -29,6 +33,8 @@ export const routes: Routes = [
       },
       {
         path: 'campaigns',
+        canActivate: [permissionGuard],
+        data: { permissions: ['campaigns.view'] },
         loadChildren: () =>
           import('@features/campaigns/feature.routes').then((m) => m.CAMPAIGNS_ROUTES),
       },

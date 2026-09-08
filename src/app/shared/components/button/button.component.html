@@ -4,10 +4,13 @@
   [class]="extraClass"
   [attr.type]="type"
   [attr.aria-label]="ariaLabel || null"
+  [attr.aria-busy]="loading ? 'true' : null"
   [disabled]="disabled"
   (click)="onClick()"
 >
-  @if (icon && iconPosition === 'left') {
+  @if (loading) {
+    <span class="loading loading-spinner loading-sm" aria-hidden="true"></span>
+  } @else if (icon && iconPosition === 'left') {
     <app-icon [name]="icon" [size]="iconSize" className="text-current"></app-icon>
   }
   <ng-content></ng-content>

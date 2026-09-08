@@ -1,7 +1,16 @@
 <svg
-  [lucideIcon]="name"
-  [size]="size"
-  [strokeWidth]="strokeWidth"
+  [attr.width]="size"
+  [attr.height]="size"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  [attr.stroke-width]="strokeWidth"
+  stroke-linecap="round"
+  stroke-linejoin="round"
   [ngClass]="className"
-  [attr.aria-hidden]="ariaHidden ? 'true' : null"
-></svg>
+  aria-hidden="true"
+>
+  @for (path of iconPaths; track path) {
+    <path [attr.d]="path"></path>
+  }
+</svg>

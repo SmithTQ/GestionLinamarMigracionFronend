@@ -1,0 +1,65 @@
+<app-modal [isOpen]="isOpen" (closed)="close()">
+  <div class="space-y-4">
+    <div>
+      <h3 class="text-lg font-semibold text-neutral">
+        {{ campaign ? 'Editar campana' : 'Nueva campana' }}
+      </h3>
+      <p class="text-sm text-neutral/70">
+        Completa la informacion principal para registrar la campana.
+      </p>
+    </div>
+    <div class="grid gap-3 md:grid-cols-2">
+      <app-input
+        label="Nombre"
+        placeholder="Ej: Madre 2026"
+        [value]="form.controls.name.value"
+        [error]="
+          nameError ||
+          (form.controls.name.touched && form.controls.name.invalid
+            ? 'Ingresa un nombre de campana.'
+            : undefined)
+        "
+        (valueChanged)="form.controls.name.setValue($event)"
+      ></app-input>
+      <app-input
+        label="Fecha inicio"
+        type="date"
+        [value]="form.controls.startsOn.value"
+        [error]="
+          form.controls.startsOn.touched && form.controls.startsOn.invalid
+            ? 'Ingresa la fecha de inicio.'
+            : undefined
+        "
+        (valueChanged)="form.controls.startsOn.setValue($event)"
+      ></app-input>
+      <app-input
+        label="Fecha fin"
+        type="date"
+        [value]="form.controls.endsOn.value"
+        [error]="
+          form.hasError('dateRange') ? 'La fecha fin debe ser posterior al inicio.' : undefined
+        "
+        (valueChanged)="form.controls.endsOn.setValue($event)"
+      ></app-input>
+      <label class="form-control w-full md:col-span-2">
+        <span class="label-text text-sm font-medium text-neutral">Estado</span>
+        <select
+          class="select select-bordered w-full"
+          [value]="form.controls.status.value"
+          (change)="form.controls.status.setValue($any($event.target).value)"
+        >
+          <option value="open">Abierta</option>
+          <option value="closed">Cerrada</option>
+          <option value="draft">Borrador</option>
+          <option value="cancelled">Cancelada</option>
+        </select>
+      </label>
+    </div>
+    <div class="flex flex-wrap justify-end gap-2">
+      <app-button variant="secondary" (clicked)="close()">Cancelar</app-button>
+      <app-button [loading]="isSaving" [disabled]="isSaving" (clicked)="submit()">
+        {{ isSaving ? 'Guardando...' : campaign ? 'Guardar cambios' : 'Crear campana' }}
+      </app-button>
+    </div>
+  </div>
+</app-modal>

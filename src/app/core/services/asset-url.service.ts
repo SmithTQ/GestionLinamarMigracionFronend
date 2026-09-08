@@ -1,17 +1,13 @@
 import { APP_BASE_HREF, DOCUMENT } from '@angular/common';
-import { Inject, Injectable, Optional } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class AssetUrlService {
-  private readonly baseHref: string;
-
-  constructor(
-    @Optional() @Inject(APP_BASE_HREF) baseHref: string | null,
-    @Inject(DOCUMENT) private readonly document: Document
-  ) {
-    const href = baseHref || this.getDocumentBaseHref() || '/';
-    this.baseHref = this.normalizeBaseHref(href);
-  }
+  private readonly document = inject(DOCUMENT);
+  private readonly injectedBaseHref = inject(APP_BASE_HREF, { optional: true });
+  private readonly baseHref = this.normalizeBaseHref(
+    this.injectedBaseHref || this.getDocumentBaseHref() || '/',
+  );
 
   build(path: string): string {
     if (!path) {

@@ -2,12 +2,12 @@ import { AuthSession } from '@features/auth/models/auth.model';
 import { LoginResponseDto } from './auth.dto';
 
 export function mapLoginResponseToSession(dto: LoginResponseDto): AuthSession {
-  const token = dto.access_token;
-  const user = dto.user;
+  const token = dto.datos?.token;
+  const user = dto.datos?.user;
 
   if (!token || !user) {
     throw new Error('Respuesta de login invalida.');
   }
 
-  return { token, user: { ...user, role: user.role ?? 'user' } };
+  return { token, user };
 }

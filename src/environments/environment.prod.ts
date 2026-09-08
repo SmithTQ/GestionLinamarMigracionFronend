@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'http://localhost/LinamarGestionBackend/public',
+  apiUrl: '/api/v1',
 };

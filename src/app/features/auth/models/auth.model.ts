@@ -1,9 +1,8 @@
 import { User } from '@core/models/user.model';
 
 export interface LoginCredentials {
-  email: string;
+  login: string;
   password: string;
-  rememberMe?: boolean;
 }
 
 export interface AuthSession {

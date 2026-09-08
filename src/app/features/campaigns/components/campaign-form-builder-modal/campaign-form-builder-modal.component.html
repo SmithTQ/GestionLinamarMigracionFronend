@@ -1,0 +1,296 @@
+<app-modal [isOpen]="isOpen" size="full" (closed)="close()">
+  <div class="space-y-4">
+    <div>
+      <h3 class="text-lg font-semibold text-neutral">Formulario de pedidos</h3>
+      <p class="text-sm text-neutral/70">
+        Campos configurables para la campana {{ campaignId ?? '' }}.
+      </p>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[3fr_2fr]">
+      <div class="space-y-6">
+        <section class="rounded-2xl border border-base-200 bg-base-100 p-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-neutral">Productos</p>
+              <p class="text-xs text-neutral/60">Productos disponibles para la campana.</p>
+            </div>
+            <app-button size="sm" variant="outline" icon="plus" (clicked)="addProduct()">
+              Agregar
+            </app-button>
+          </div>
+          @if (productError()) {
+            <p class="mt-2 text-xs text-error">{{ productError() }}</p>
+          }
+          <div class="mt-3 grid gap-3">
+            @for (product of products(); track product.id; let i = $index) {
+              <div class="grid gap-3 rounded-2xl border border-base-200 p-3 md:grid-cols-3">
+                <app-input
+                  label="Nombre"
+                  [value]="product.name"
+                  (valueChanged)="updateProduct(i, 'name', $event)"
+                ></app-input>
+                <label class="form-control w-full">
+                  <span class="label-text mb-1 text-sm font-medium text-neutral">Imagen</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    class="file-input file-input-bordered w-full"
+                    (change)="onProductFileChange(i, $any($event.target).files)"
+                  />
+                  @if (product.fileName) {
+                    <span class="label-text-alt text-xs text-neutral/60">{{
+                      product.fileName
+                    }}</span>
+                  }
+                </label>
+                <app-input
+                  label="Precio"
+                  type="number"
+                  placeholder="S/ 0.00"
+                  [value]="product.price"
+                  (valueChanged)="updateProduct(i, 'price', $event)"
+                ></app-input>
+                <app-button size="sm" variant="ghost" icon="x" (clicked)="removeProduct(i)">
+                  Quitar
+                </app-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-base-200 bg-base-100 p-4">
+          <p class="text-sm font-semibold text-neutral">Campos fijos y ubicacion</p>
+          <p class="mt-1 text-xs text-neutral/60">
+            Campos base que estaran disponibles en el formulario.
+          </p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            @for (field of fixedFields; track field) {
+              <span class="badge badge-outline">{{ field }}</span>
+            }
+          </div>
+          <div
+            class="mt-3 flex h-32 items-center justify-center rounded-2xl border border-dashed border-base-300 bg-base-200 text-xs text-neutral/60"
+          >
+            Mapa interactivo (placeholder)
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-base-200 bg-base-100 p-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-neutral">Horario de entrega</p>
+              <p class="text-xs text-neutral/60">Opciones que el cliente podra seleccionar.</p>
+            </div>
+            <app-button size="sm" variant="outline" icon="plus" (clicked)="addScheduleOption()">
+              Agregar
+            </app-button>
+          </div>
+          @if (scheduleOptionsError()) {
+            <p class="mt-2 text-xs text-error">{{ scheduleOptionsError() }}</p>
+          }
+          <div class="mt-3 grid gap-2">
+            @for (option of deliveryScheduleOptions(); track $index; let i = $index) {
+              <div class="flex items-center gap-2">
+                <app-input
+                  placeholder="Ej: 09:00 - 13:00"
+                  [value]="option"
+                  (valueChanged)="updateScheduleOption(i, $event)"
+                ></app-input>
+                <app-button size="sm" variant="ghost" icon="x" (clicked)="removeScheduleOption(i)">
+                  Quitar
+                </app-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-base-200 bg-base-100 p-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-neutral">Campos variables</p>
+              <p class="text-xs text-neutral/60">Agrega los campos propios de esta campana.</p>
+            </div>
+            <app-button size="sm" variant="outline" icon="plus" (clicked)="addField()">
+              Agregar campo
+            </app-button>
+          </div>
+          @if (fieldLabelError()) {
+            <p class="mt-2 text-xs text-error">{{ fieldLabelError() }}</p>
+          }
+          <div class="mt-3 grid gap-3">
+            @if (!dynamicFields().length) {
+              <p
+                class="rounded-2xl border border-dashed border-base-200 p-4 text-center text-xs text-neutral/60"
+              >
+                Aun no hay campos variables.
+              </p>
+            }
+            @for (field of dynamicFields(); track field.id; let i = $index) {
+              <div class="rounded-2xl border border-base-200 p-3">
+                <div class="grid gap-3 md:grid-cols-3">
+                  <app-input
+                    label="Nombre del campo"
+                    placeholder="Ej: Numero de factura"
+                    [value]="field.label"
+                    (valueChanged)="updateField(i, 'label', $event)"
+                  ></app-input>
+                  <label class="form-control w-full">
+                    <span class="label-text mb-1 text-sm font-medium text-neutral">Tipo</span>
+                    <select
+                      class="select select-bordered w-full"
+                      [value]="field.type"
+                      (change)="updateField(i, 'type', $any($event.target).value)"
+                    >
+                      <option value="text">Texto</option>
+                      <option value="number">Numero</option>
+                      <option value="date">Fecha</option>
+                      <option value="select">Seleccion</option>
+                    </select>
+                  </label>
+                  <label class="form-control w-full">
+                    <span class="label-text mb-1 text-sm font-medium text-neutral">Requerido</span>
+                    <select
+                      class="select select-bordered w-full"
+                      [value]="field.required ? 'yes' : 'no'"
+                      (change)="updateField(i, 'required', $any($event.target).value === 'yes')"
+                    >
+                      <option value="no">No</option>
+                      <option value="yes">Si</option>
+                    </select>
+                  </label>
+                </div>
+                @if (field.type === 'select') {
+                  <div class="mt-3 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <p class="text-xs font-semibold text-neutral/60">Opciones</p>
+                      <app-button size="sm" variant="outline" icon="plus" (clicked)="addOption(i)">
+                        Agregar opcion
+                      </app-button>
+                    </div>
+                    @for (option of field.options ?? []; track $index; let o = $index) {
+                      <div class="flex items-center gap-2">
+                        <app-input
+                          placeholder="Etiqueta de opcion"
+                          [value]="option"
+                          (valueChanged)="updateOption(i, o, $event)"
+                        ></app-input>
+                        <app-button
+                          size="sm"
+                          variant="ghost"
+                          icon="x"
+                          (clicked)="removeOption(i, o)"
+                        >
+                          Quitar
+                        </app-button>
+                      </div>
+                    }
+                  </div>
+                }
+                <div class="mt-3 flex justify-end">
+                  <app-button size="sm" variant="ghost" icon="x" (clicked)="removeField(i)">
+                    Quitar
+                  </app-button>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+
+        <div class="flex flex-wrap justify-end gap-2">
+          <app-button variant="secondary" (clicked)="close()">Cancelar</app-button>
+          <app-button (clicked)="save()">Guardar formulario</app-button>
+        </div>
+      </div>
+
+      <aside
+        class="rounded-2xl border border-base-200 bg-base-100 p-4 lg:sticky lg:top-6 lg:self-start"
+      >
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-sm font-semibold text-neutral">Vista previa</p>
+            <p class="text-xs text-neutral/60">Asi vera el cliente el formulario.</p>
+          </div>
+          <span class="badge badge-outline">Previsualizacion</span>
+        </div>
+        <div class="mt-4 space-y-4">
+          <div class="rounded-2xl border border-base-200 p-4">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">Detalle</p>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+              @for (product of products(); track product.id) {
+                <button
+                  type="button"
+                  class="group flex items-center gap-3 rounded-2xl border border-base-200 p-3 text-left transition hover:border-primary/50"
+                  [ngClass]="{ 'border-primary shadow-sm': selectedProductId() === product.id }"
+                  (click)="selectProduct(product.id)"
+                >
+                  <div
+                    class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-base-200 text-xs text-neutral/60"
+                  >
+                    @if (product.image) {
+                      <img
+                        [src]="product.image"
+                        alt="Producto"
+                        class="h-full w-full object-cover"
+                      />
+                    } @else {
+                      <span>IMG</span>
+                    }
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm font-semibold text-neutral">
+                      {{ product.name || 'Producto sin nombre' }}
+                    </p>
+                    <p class="text-xs text-neutral/60">S/ {{ product.price || '0.00' }}</p>
+                  </div>
+                </button>
+              }
+            </div>
+          </div>
+          <div class="rounded-2xl border border-base-200 p-4">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">Entrega</p>
+            <div class="mt-3 grid gap-3 md:grid-cols-2">
+              <app-input label="Remitente" placeholder="Nombre completo"></app-input>
+              <app-input label="Telef. Remitente" placeholder="999 999 999"></app-input>
+              <app-input label="Destinatario" placeholder="Nombre completo"></app-input>
+              <app-input label="Telef. Destinatario" placeholder="999 999 999"></app-input>
+              <app-input label="Direccion" placeholder="Av. Principal 123"></app-input>
+              <select class="select select-bordered w-full" disabled>
+                <option>Distrito desde la base de datos</option>
+              </select>
+              <select class="select select-bordered w-full md:col-span-2">
+                @for (option of deliveryScheduleOptions(); track $index) {
+                  <option [value]="option">{{ option || 'Opcion sin nombre' }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          @if (dynamicFields().length) {
+            <div class="rounded-2xl border border-base-200 p-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">
+                Campos variables
+              </p>
+              <div class="mt-3 grid gap-3 md:grid-cols-2">
+                @for (field of dynamicFields(); track field.id) {
+                  <div class="rounded-2xl border border-base-200 p-3">
+                    <p class="text-xs font-semibold text-neutral/60">
+                      {{ field.label || 'Nuevo campo' }}
+                    </p>
+                    <p class="mt-2 text-xs text-neutral/50">
+                      Tipo: {{ field.type }} · {{ field.required ? 'Requerido' : 'Opcional' }}
+                    </p>
+                    @if (field.type === 'select') {
+                      <p class="mt-2 text-xs text-neutral/50">
+                        Opciones: {{ formatOptions(field.options) }}
+                      </p>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </aside>
+    </div>
+  </div>
+</app-modal>

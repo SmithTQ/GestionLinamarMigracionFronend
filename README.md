@@ -1,59 +1,68 @@
-# EnterpriseApp
+# Linamar Gestion Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.19.
+Frontend administrativo de Linamar Gestion construido con Angular 21, Signals, componentes standalone, Tailwind CSS y DaisyUI.
 
-## Development server
+## Requisitos
 
-To start a local development server, run:
+- Node.js compatible con Angular 21.
+- npm.
+- Backend Laravel disponible en `http://localhost:8000/api/v1` para desarrollo.
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Instalacion
 
 ```bash
-ng generate component component-name
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Desarrollo
 
 ```bash
-ng generate --help
+npm start
 ```
 
-## Building
+La aplicacion queda disponible en `http://localhost:4200`.
 
-To build the project run:
+## Validacion
 
 ```bash
-ng build
+npm run format:check
+npm run lint
+npm run build
+npm test -- --watch=false --browsers=ChromeHeadlessNoSandbox
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Ambientes
 
-## Running unit tests
+La configuracion de API se encuentra en:
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+- Desarrollo: `src/environments/environment.ts`.
+- Produccion: `src/environments/environment.prod.ts`.
 
-```bash
-ng test
+## Estrategia de ramas
+
+La estrategia replica el repositorio backend:
+
+- `main`: codigo estable y listo para produccion.
+- `qa`: validacion integrada y pruebas de aceptacion.
+- `dev`: desarrollo activo de funcionalidades.
+
+Flujo recomendado:
+
+1. Crear una rama de trabajo desde `dev`.
+2. Integrar los cambios en `dev` mediante pull request.
+3. Promover `dev` hacia `qa` para validacion.
+4. Promover `qa` hacia `main` para publicacion.
+
+## Estructura principal
+
+```text
+src/app/core       Servicios globales, autenticacion, guards e HTTP.
+src/app/shared     Componentes, pipes y utilidades reutilizables.
+src/app/features   Modulos funcionales del sistema.
 ```
 
-## Running end-to-end tests
+## Notas
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Las rutas administrativas requieren autenticacion y permisos.
+- El backend es la autoridad definitiva para autorizacion y reglas de negocio.
+- No se deben versionar credenciales, tokens, `node_modules`, `dist` ni caches locales.

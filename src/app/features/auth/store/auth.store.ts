@@ -12,14 +12,35 @@ export class AuthStore {
   readonly isAuthenticated = computed(() => !!this.userSignal() && !!this.tokenSignal());
 
   constructor() {
-    const storedUser = localStorage.getItem(STORAGE_KEYS.user);
-    const storedToken = sessionStorage.getItem(STORAGE_KEYS.token);
-    if (storedUser) {
-      this.userSignal.set(JSON.parse(storedUser) as AuthSession['user']);
+    try {
+      const storedUser = localStorage.getItem(STORAGE_KEYS.user);
+      const storedToken = sessionStorage.getItem(STORAGE_KEYS.token);
+      if (storedUser) {
+        this.userSignal.set(JSON.parse(storedUser) as AuthSession['user']);
+      }
+      if (storedToken) {
+        this.tokenSignal.set(storedToken);
+      }
+    } catch {
+      this.clearSession();
     }
-    if (storedToken) {
-      this.tokenSignal.set(storedToken);
-    }
+  }
+
+  setUser(user: AuthSession['user']): void {
+    this.userSignal.set(user);
+    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
+  }
+
+  hasPermission(permission: string): boolean {
+    return (
+      this.userSignal()?.roles?.some((role) =>
+        role.permissions.some((item) => item.slug === permission),
+      ) ?? false
+    );
+  }
+
+  hasAnyPermission(permissions: string[]): boolean {
+    return permissions.some((permission) => this.hasPermission(permission));
   }
 
   setSession(session: AuthSession): void {

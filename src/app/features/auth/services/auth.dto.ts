@@ -1,16 +1,17 @@
+import { ApiResponse } from '@core/models/api-response.model';
 import { User } from '@core/models/user.model';
 
 export interface LoginRequestDto {
-  email: string;
+  login: string;
   password: string;
-  rememberMe?: boolean;
 }
 
-export interface LoginResponseDto {
-  access_token: string;
-  refresh_token?: string;
-  token_type?: string;
-  expires_in?: number;
+export interface AuthResponseData {
+  token: string;
+  token_type: 'Bearer';
   user: User;
-  error?: string;
 }
+
+export type LoginResponseDto = ApiResponse<AuthResponseData>;
+export type MeResponseDto = ApiResponse<User>;
+export type LogoutResponseDto = ApiResponse<null>;

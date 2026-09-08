@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class UiKitService {
-  getTableRows(): Array<Record<string, string>> {
+  getTableRows(): Record<string, string>[] {
     return [
       {
         id: 'CMP-2031',

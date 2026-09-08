@@ -11,11 +11,21 @@
         'max-w-none': size === 'full',
       }"
     >
-      <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4" (click)="close()">
+      <button
+        type="button"
+        aria-label="Cerrar modal"
+        class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+        (click)="close()"
+      >
         X
       </button>
       <ng-content></ng-content>
     </div>
-    <div class="modal-backdrop" (click)="close()"></div>
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Cerrar modal"
+      (click)="close()"
+    ></button>
   </div>
 }

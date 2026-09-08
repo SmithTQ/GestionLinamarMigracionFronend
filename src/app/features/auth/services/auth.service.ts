@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, finalize, of, tap } from 'rxjs';
 import { AUTH_REPOSITORY } from './auth.repository';
 import { AuthSession, LoginCredentials } from '@features/auth/models/auth.model';
 import { AuthStore } from '@features/auth/store/auth.store';
@@ -20,7 +20,24 @@ export class AuthService {
     );
   }
 
-  logout(): void {
-    this.store.clearSession();
+  restoreSession(): Observable<AuthSession['user'] | null> {
+    if (!this.store.token()) {
+      return of(null);
+    }
+
+    return this.authRepository.me().pipe(
+      tap((user) => this.store.setUser(user)),
+      catchError(() => {
+        this.store.clearSession();
+        return of(null);
+      }),
+    );
+  }
+
+  logout(): Observable<void> {
+    return this.authRepository.logout().pipe(
+      catchError(() => of(undefined)),
+      finalize(() => this.store.clearSession()),
+    );
   }
 }

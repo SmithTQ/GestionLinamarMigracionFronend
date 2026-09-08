@@ -1,21 +1,26 @@
-﻿import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  provideAppInitializer,
+  provideZoneChangeDetection,
+} from '@angular/core';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideLucideIcons } from '@lucide/angular';
 
-import { routes } from './app.routes';
+import { authInterceptor } from '@core/http/auth.interceptor';
 import { AUTH_REPOSITORY } from '@features/auth/services/auth.repository';
 import { AuthRepositoryImpl } from '@features/auth/services/auth.repository.impl';
-import { LUCIDE_ICONS } from '@shared/icons/lucide-icons';
+import { AuthService } from '@features/auth/services/auth.service';
+import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideAppInitializer(() => inject(AuthService).restoreSession()),
     provideAnimations(),
-    provideLucideIcons(...Object.values(LUCIDE_ICONS)),
     {
       provide: AUTH_REPOSITORY,
       useClass: AuthRepositoryImpl,
