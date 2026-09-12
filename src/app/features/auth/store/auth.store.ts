@@ -13,7 +13,7 @@ export class AuthStore {
 
   constructor() {
     try {
-      const storedUser = localStorage.getItem(STORAGE_KEYS.user);
+      const storedUser = sessionStorage.getItem(STORAGE_KEYS.user);
       const storedToken = sessionStorage.getItem(STORAGE_KEYS.token);
       if (storedUser) {
         this.userSignal.set(JSON.parse(storedUser) as AuthSession['user']);
@@ -28,7 +28,7 @@ export class AuthStore {
 
   setUser(user: AuthSession['user']): void {
     this.userSignal.set(user);
-    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
+    sessionStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
   }
 
   hasPermission(permission: string): boolean {
@@ -45,14 +45,14 @@ export class AuthStore {
 
   setSession(session: AuthSession): void {
     this.userSignal.set(session.user);
-    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(session.user));
+    sessionStorage.setItem(STORAGE_KEYS.user, JSON.stringify(session.user));
     this.tokenSignal.set(session.token);
     sessionStorage.setItem(STORAGE_KEYS.token, session.token);
   }
 
   clearSession(): void {
     this.userSignal.set(null);
-    localStorage.removeItem(STORAGE_KEYS.user);
+    sessionStorage.removeItem(STORAGE_KEYS.user);
     this.tokenSignal.set(null);
     sessionStorage.removeItem(STORAGE_KEYS.token);
   }

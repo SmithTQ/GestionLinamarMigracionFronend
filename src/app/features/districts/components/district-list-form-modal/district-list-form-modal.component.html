@@ -1,0 +1,185 @@
+<app-modal [isOpen]="isOpen" size="lg" (closed)="close()">
+  <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
+    <div>
+      <h2 class="text-xl font-semibold text-neutral">
+        {{ districtList ? 'Editar lista de cobertura' : 'Crear lista de cobertura' }}
+      </h2>
+      <p class="mt-1 text-sm text-neutral/60">
+        Selecciona distritos activos. La lista puede reutilizarse en varias campanas y formularios.
+      </p>
+    </div>
+    <div class="grid gap-4 md:grid-cols-2">
+      <label class="form-control w-full">
+        <span class="label-text text-sm font-medium text-neutral">Codigo</span>
+        <input class="input input-bordered w-full" formControlName="code" />
+        @if (form.controls.code.touched && form.controls.code.invalid) {
+          <span class="mt-1 text-xs text-error">El codigo es obligatorio.</span>
+        }
+      </label>
+      <label class="form-control w-full">
+        <span class="label-text text-sm font-medium text-neutral">Nombre</span>
+        <input class="input input-bordered w-full" formControlName="name" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <span class="mt-1 text-xs text-error">El nombre es obligatorio.</span>
+        }
+      </label>
+      <label class="form-control w-full md:col-span-2">
+        <span class="label-text text-sm font-medium text-neutral">Descripcion</span>
+        <textarea
+          class="textarea textarea-bordered w-full"
+          formControlName="description"
+        ></textarea>
+      </label>
+      <div class="space-y-3 md:col-span-2">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p class="text-sm font-medium text-neutral">Distritos permitidos</p>
+            <p class="text-xs text-neutral/60">
+              Marca los distritos que formaran parte de esta plantilla.
+            </p>
+          </div>
+          <span class="badge badge-primary badge-outline">
+            {{ form.controls.districtIds.value.length }} seleccionados
+          </span>
+        </div>
+
+        <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+          <select
+            class="select select-bordered w-full"
+            [value]="departmentFilter()"
+            (change)="setDepartment($any($event.target).value)"
+          >
+            <option value="">Selecciona un departamento</option>
+            @for (department of departments; track department.code) {
+              <option [value]="department.code">{{ department.name }}</option>
+            }
+          </select>
+          <select
+            class="select select-bordered w-full"
+            [value]="provinceFilter()"
+            [disabled]="!departmentFilter() || !provinces.length"
+            (change)="setProvince($any($event.target).value)"
+          >
+            <option value="">Todas las provincias</option>
+            @for (province of provinces; track province.code) {
+              <option [value]="province.code">{{ province.name }}</option>
+            }
+          </select>
+          <app-button type="button" size="sm" variant="ghost" (clicked)="selectVisible()">
+            Seleccionar visibles
+          </app-button>
+          <app-button type="button" size="sm" variant="ghost" (clicked)="clearFilters()">
+            Limpiar filtros
+          </app-button>
+        </div>
+
+        @if (isLoadingDistricts) {
+          <div
+            class="flex min-h-40 items-center justify-center rounded-xl border border-base-200 bg-base-200/30"
+            role="status"
+            aria-live="polite"
+          >
+            <app-loading label="Cargando distritos disponibles..."></app-loading>
+          </div>
+        } @else if (districts.length) {
+          <div class="grid gap-4 lg:grid-cols-2">
+            <div class="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-base-200 p-3">
+              <p class="text-xs font-semibold uppercase tracking-wide text-neutral/50">
+                Catalogo disponible
+              </p>
+              @for (district of filteredDistricts(); track district.id) {
+                <label
+                  class="flex cursor-pointer items-start gap-3 rounded-lg p-2 transition hover:bg-base-200"
+                  [class.bg-primary\/10]="isSelected(district.id)"
+                >
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-sm checkbox-primary mt-0.5"
+                    [checked]="isSelected(district.id)"
+                    (change)="toggleDistrict(district.id)"
+                  />
+                  <span class="min-w-0 text-sm">
+                    <span class="block font-medium text-neutral">{{ district.name }}</span>
+                    <span class="block text-xs text-neutral/60">
+                      {{ district.code }} | {{ district.province }}, {{ district.department }}
+                    </span>
+                  </span>
+                </label>
+              } @empty {
+                <p class="py-6 text-center text-sm text-neutral/60">
+                  No hay distritos para los filtros seleccionados.
+                </p>
+              }
+            </div>
+
+            <div
+              class="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-primary/20 bg-primary/5 p-3"
+            >
+              <p class="text-xs font-semibold uppercase tracking-wide text-neutral/50">
+                Orden de cobertura
+              </p>
+              @for (district of selectedDistricts(); track district.id; let index = $index) {
+                <div class="flex items-center gap-2 rounded-lg bg-base-100 p-2 shadow-sm">
+                  <span class="min-w-0 flex-1 text-sm">
+                    <span class="block font-medium text-neutral">{{ district.name }}</span>
+                    <span class="block text-xs text-neutral/60">{{ district.code }}</span>
+                  </span>
+                  <app-button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    icon="arrow-up"
+                    [iconOnly]="true"
+                    [disabled]="index === 0"
+                    ariaLabel="Mover distrito arriba"
+                    (clicked)="moveSelected(index, -1)"
+                  ></app-button>
+                  <app-button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    icon="arrow-down"
+                    [iconOnly]="true"
+                    [disabled]="index === form.controls.districtIds.value.length - 1"
+                    ariaLabel="Mover distrito abajo"
+                    (clicked)="moveSelected(index, 1)"
+                  ></app-button>
+                  <app-button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    icon="x"
+                    [iconOnly]="true"
+                    ariaLabel="Quitar distrito"
+                    (clicked)="toggleDistrict(district.id)"
+                  ></app-button>
+                </div>
+              } @empty {
+                <p class="py-6 text-center text-sm text-neutral/60">
+                  Aun no has seleccionado distritos.
+                </p>
+              }
+            </div>
+          </div>
+        } @else {
+          <p class="rounded-xl bg-warning/10 p-3 text-sm text-warning">
+            No hay distritos activos disponibles.
+          </p>
+        }
+      </div>
+    </div>
+    <div class="flex justify-end gap-2">
+      <app-button
+        type="button"
+        variant="secondary"
+        [disabled]="isSaving || isLoadingDistricts"
+        (clicked)="close()"
+      >
+        Cancelar
+      </app-button>
+      <app-button type="submit" [loading]="isSaving" [disabled]="isSaving">
+        {{ isSaving ? 'Guardando...' : 'Guardar lista' }}
+      </app-button>
+    </div>
+  </form>
+</app-modal>

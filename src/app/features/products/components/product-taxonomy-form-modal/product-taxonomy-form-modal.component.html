@@ -1,0 +1,59 @@
+<app-modal [isOpen]="isOpen" (closed)="closed.emit()">
+  <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
+    <div>
+      <h2 class="text-xl font-semibold text-neutral">{{ title }}</h2>
+      <p class="mt-1 text-sm text-neutral/60">
+        Organiza el catálogo para encontrar productos más fácilmente.
+      </p>
+    </div>
+
+    @if (kind === 'subcategory') {
+      <label class="form-control">
+        <span class="label-text mb-1 text-sm font-medium">Categoría</span>
+        <select class="select select-bordered" formControlName="category_id">
+          <option [ngValue]="null">Selecciona una categoría</option>
+          @for (category of categories; track category.id) {
+            <option [ngValue]="category.id">{{ category.name }}</option>
+          }
+        </select>
+        @if (form.controls.category_id.touched && form.controls.category_id.invalid) {
+          <span class="text-xs text-error">Selecciona una categoría.</span>
+        }
+      </label>
+    }
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <label class="form-control">
+        <span class="label-text mb-1 text-sm font-medium">Nombre</span>
+        <input class="input input-bordered" formControlName="name" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <span class="text-xs text-error">El nombre es obligatorio.</span>
+        }
+      </label>
+      <label class="form-control">
+        <span class="label-text mb-1 text-sm font-medium">Slug</span>
+        <input class="input input-bordered" formControlName="slug" />
+        @if (form.controls.slug.touched && form.controls.slug.invalid) {
+          <span class="text-xs text-error">El slug es obligatorio.</span>
+        }
+      </label>
+      <label class="form-control md:col-span-2">
+        <span class="label-text mb-1 text-sm font-medium">Descripción</span>
+        <textarea class="textarea textarea-bordered" formControlName="description"></textarea>
+      </label>
+      <label class="form-control">
+        <span class="label-text mb-1 text-sm font-medium">Orden</span>
+        <input class="input input-bordered" type="number" min="0" formControlName="sort_order" />
+      </label>
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <app-button variant="secondary" [disabled]="isSaving" (clicked)="closed.emit()">
+        Cancelar
+      </app-button>
+      <app-button type="submit" [loading]="isSaving" [disabled]="isSaving">
+        {{ isSaving ? 'Guardando...' : 'Guardar' }}
+      </app-button>
+    </div>
+  </form>
+</app-modal>

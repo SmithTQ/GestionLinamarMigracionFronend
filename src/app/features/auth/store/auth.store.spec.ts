@@ -40,7 +40,7 @@ describe('AuthStore', () => {
   });
 
   it('restores a persisted session', () => {
-    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(session.user));
+    sessionStorage.setItem(STORAGE_KEYS.user, JSON.stringify(session.user));
     sessionStorage.setItem(STORAGE_KEYS.token, session.token);
 
     const store = TestBed.inject(AuthStore);
@@ -65,6 +65,6 @@ describe('AuthStore', () => {
 
     expect(store.isAuthenticated()).toBeFalse();
     expect(sessionStorage.getItem(STORAGE_KEYS.token)).toBeNull();
-    expect(localStorage.getItem(STORAGE_KEYS.user)).toBeNull();
+    expect(sessionStorage.getItem(STORAGE_KEYS.user)).toBeNull();
   });
 });

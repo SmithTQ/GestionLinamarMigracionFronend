@@ -102,6 +102,7 @@
               <app-button
                 type="button"
                 [fullWidth]="true"
+                [loading]="isSubmitting()"
                 [disabled]="isSubmitting()"
                 (clicked)="submit()"
               >

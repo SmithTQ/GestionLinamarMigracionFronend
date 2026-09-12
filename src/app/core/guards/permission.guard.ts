@@ -8,8 +8,12 @@ export const permissionGuard: CanActivateFn = (route) => {
   const apiErrorStore = inject(ApiErrorStore);
   const router = inject(Router);
   const permissions = route.data['permissions'] as string[] | undefined;
+  const requireAll = route.data['requireAllPermissions'] === true;
 
-  if (!permissions?.length || authStore.hasAnyPermission(permissions)) {
+  const hasAccess = requireAll
+    ? permissions?.every((permission) => authStore.hasPermission(permission))
+    : permissions?.some((permission) => authStore.hasPermission(permission));
+  if (!permissions?.length || hasAccess) {
     return true;
   }
 

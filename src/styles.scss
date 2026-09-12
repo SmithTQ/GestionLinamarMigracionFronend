@@ -38,6 +38,32 @@
     font-family: ui-sans-serif, system-ui, sans-serif;
   }
 
+  // Keep scrollbars subtle while preserving a clear hover state.
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--p) / 0.35) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+    background-color: hsl(var(--p) / 0.35);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--p) / 0.58);
+  }
+
   h1,
   h2,
   h3 {
@@ -56,5 +82,11 @@
 
   button {
     font-family: inherit;
+  }
+}
+
+@layer components {
+  .form-control {
+    gap: 0.375rem;
   }
 }

@@ -1,0 +1,50 @@
+<app-modal [isOpen]="isOpen" size="md" (closed)="closed.emit()">
+  <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
+    <div>
+      <h2 class="text-xl font-semibold text-neutral">
+        {{ district ? 'Editar distrito' : 'Crear distrito' }}
+      </h2>
+      <p class="mt-1 text-sm text-neutral/60">
+        El codigo debe corresponder al identificador UBIGEO definido por el backend.
+      </p>
+    </div>
+    <div class="grid gap-4 md:grid-cols-2">
+      <label class="form-control w-full">
+        <span class="label-text text-sm font-medium text-neutral">Codigo UBIGEO</span>
+        <input class="input input-bordered w-full" formControlName="code" maxlength="6" />
+        @if (form.controls.code.touched && form.controls.code.invalid) {
+          <span class="mt-1 text-xs text-error">El codigo es obligatorio.</span>
+        }
+      </label>
+      <label class="form-control w-full">
+        <span class="label-text text-sm font-medium text-neutral">Nombre</span>
+        <input class="input input-bordered w-full" formControlName="name" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <span class="mt-1 text-xs text-error">El nombre es obligatorio.</span>
+        }
+      </label>
+      <label class="form-control w-full">
+        <span class="label-text text-sm font-medium text-neutral">Provincia</span>
+        <input class="input input-bordered w-full" formControlName="province" />
+        @if (form.controls.province.touched && form.controls.province.invalid) {
+          <span class="mt-1 text-xs text-error">La provincia es obligatoria.</span>
+        }
+      </label>
+      <label class="form-control w-full">
+        <span class="label-text text-sm font-medium text-neutral">Departamento</span>
+        <input class="input input-bordered w-full" formControlName="department" />
+        @if (form.controls.department.touched && form.controls.department.invalid) {
+          <span class="mt-1 text-xs text-error">El departamento es obligatorio.</span>
+        }
+      </label>
+    </div>
+    <div class="flex justify-end gap-2">
+      <app-button type="button" variant="secondary" [disabled]="isSaving" (clicked)="closed.emit()">
+        Cancelar
+      </app-button>
+      <app-button type="submit" [loading]="isSaving" [disabled]="isSaving">
+        {{ isSaving ? 'Guardando...' : 'Guardar distrito' }}
+      </app-button>
+    </div>
+  </form>
+</app-modal>

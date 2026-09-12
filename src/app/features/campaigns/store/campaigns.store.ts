@@ -88,4 +88,14 @@ export class CampaignsStore {
       }),
     );
   }
+
+  get(id: number): Observable<Campaign> {
+    this.errorSignal.set(null);
+    return this.campaignsService.get(id).pipe(
+      catchError((error: unknown) => {
+        this.errorSignal.set('No se pudo consultar la campana.');
+        throw error;
+      }),
+    );
+  }
 }

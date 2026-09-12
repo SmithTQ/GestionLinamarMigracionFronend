@@ -1,0 +1,136 @@
+<app-page-container>
+  <section class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <span class="badge badge-primary badge-outline">Catálogo</span>
+      <h1 class="mt-2 text-3xl font-semibold text-neutral">Productos</h1>
+      <p class="text-sm text-neutral/70">Administra los productos disponibles para las campañas.</p>
+    </div>
+    @if (canManage()) {
+      <div class="flex flex-wrap gap-2">
+        <app-button variant="outline" (clicked)="openTaxonomyManager()">
+          Gestionar catálogo
+        </app-button>
+        <app-button icon="plus" (clicked)="openCreate()">Crear producto</app-button>
+      </div>
+    }
+  </section>
+  @if (error()) {
+    <p class="mt-4 rounded-xl bg-error/10 p-3 text-sm text-error">{{ error() }}</p>
+  }
+
+  <section class="mt-6 grid gap-4 lg:grid-cols-2">
+    <label class="form-control">
+      <span class="label-text mb-1 text-sm font-medium">Filtrar por categoría</span>
+      <select
+        class="select select-bordered"
+        [value]="selectedCategoryId() ?? ''"
+        (change)="changeCategory($any($event.target).value)"
+      >
+        <option value="">Todas las categorías</option>
+        @for (category of categories(); track category.id) {
+          <option [value]="category.id">{{ category.name }}</option>
+        }
+      </select>
+    </label>
+    <label class="form-control">
+      <span class="label-text mb-1 text-sm font-medium">Filtrar por subcategoría</span>
+      <select
+        class="select select-bordered"
+        [value]="selectedSubcategoryId() ?? ''"
+        (change)="changeSubcategory($any($event.target).value)"
+      >
+        <option value="">Todas las subcategorías</option>
+        @for (category of categories(); track category.id) {
+          @if (!selectedCategoryId() || selectedCategoryId() === category.id) {
+            @for (subcategory of category.subcategories; track subcategory.id) {
+              <option [value]="subcategory.id">{{ category.name }} / {{ subcategory.name }}</option>
+            }
+          }
+        }
+      </select>
+    </label>
+  </section>
+
+  <app-table
+    class="mt-6 block"
+    title="Catálogo de productos"
+    description="Productos activos del catálogo global."
+    [columns]="columns"
+    [rows]="rows()"
+    [actions]="actions()"
+    [useContextMenuActions]="true"
+    [loading]="isLoading()"
+    [serverSide]="true"
+    [sort]="sort()"
+    [filterValues]="filters()"
+    [pagination]="pagination()"
+    (actionClicked)="onAction($event)"
+    (pageChanged)="changePage($event)"
+    (pageSizeChanged)="changePageSize($event)"
+    (sortChanged)="changeSort($event)"
+    (filterChanged)="changeFilter($event)"
+    (imageClicked)="openImage($event)"
+  ></app-table>
+  <app-product-taxonomy-manager-modal
+    [isOpen]="taxonomyManagerOpen()"
+    [categories]="categories()"
+    (closed)="closeTaxonomyManager()"
+    (createCategory)="openCreateTaxonomy('category')"
+    (editCategory)="openEditCategory($event)"
+    (removeCategory)="removeCategory($event)"
+    (createSubcategory)="openCreateSubcategory($event)"
+    (editSubcategory)="openManagerEditSubcategory($event)"
+    (removeSubcategory)="removeSubcategory($event)"
+  ></app-product-taxonomy-manager-modal>
+  <app-product-taxonomy-form-modal
+    [isOpen]="taxonomyModalOpen()"
+    [kind]="taxonomyKind()"
+    [item]="editingTaxonomy()"
+    [categories]="categories()"
+    [isSaving]="isSavingTaxonomy()"
+    (closed)="closeTaxonomyModal()"
+    (submitted)="saveTaxonomy($event)"
+  ></app-product-taxonomy-form-modal>
+  <app-product-form-modal
+    [isOpen]="modalOpen()"
+    [product]="editingProduct()"
+    [categories]="categories()"
+    [isSaving]="isSaving()"
+    (closed)="closeModal()"
+    (submitted)="save($event)"
+  ></app-product-form-modal>
+  <app-modal [isOpen]="imageModalOpen()" size="md" (closed)="closeImage()">
+    <div class="space-y-4">
+      <h2 class="text-lg font-semibold text-neutral">{{ selectedImageName() }}</h2>
+      @if (selectedImageUrl()) {
+        <img
+          class="mx-auto max-h-[60vh] w-auto max-w-full rounded-2xl object-contain"
+          [src]="selectedImageUrl()"
+          [alt]="selectedImageName() ?? 'Imagen del producto'"
+        />
+      }
+      <div class="flex justify-end">
+        <app-button variant="secondary" (clicked)="closeImage()">Cerrar</app-button>
+      </div>
+    </div>
+  </app-modal>
+  <app-modal [isOpen]="deleteModalOpen()" size="sm" (closed)="closeDeleteModal()"
+    ><div class="space-y-4">
+      <h2 class="text-lg font-semibold text-neutral">Desactivar producto</h2>
+      <p class="text-sm text-neutral/70">
+        Se desactivará <strong>{{ productToDelete()?.name }}</strong> del catálogo.
+      </p>
+      <div class="flex justify-end gap-2">
+        <app-button variant="secondary" [disabled]="isDeleting()" (clicked)="closeDeleteModal()"
+          >Cancelar</app-button
+        ><app-button
+          variant="outline"
+          [loading]="isDeleting()"
+          [disabled]="isDeleting()"
+          (clicked)="confirmDelete()"
+          >Desactivar</app-button
+        >
+      </div>
+    </div></app-modal
+  >
+</app-page-container>

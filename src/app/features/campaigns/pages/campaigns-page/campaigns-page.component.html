@@ -20,6 +20,9 @@
   @if (loadError()) {
     <p class="mt-4 rounded-xl bg-error/10 p-3 text-sm text-error">{{ loadError() }}</p>
   }
+  @if (catalogError()) {
+    <p class="mt-4 rounded-xl bg-warning/10 p-3 text-sm text-warning">{{ catalogError() }}</p>
+  }
 
   <app-table
     title="Campanas registradas"
@@ -47,8 +50,11 @@
   <app-campaign-create-modal
     [isOpen]="isCreateModalOpen()"
     [campaign]="editingCampaign()"
+    [districtLists]="districtLists()"
+    [isLoadingData]="isLoadingCampaignDetail()"
     [isSaving]="isCreating()"
     [nameError]="nameError()"
+    [detailError]="campaignDetailError()"
     (closed)="closeCreateModal()"
     (submitted)="saveCampaign($event)"
   ></app-campaign-create-modal>
@@ -96,7 +102,8 @@
 
   <app-campaign-form-builder-modal
     [isOpen]="isFormBuilderOpen()"
-    [campaignId]="lastCreatedCampaignId()"
+    [campaignId]="formCampaign()?.id ?? lastCreatedCampaignId()"
+    [campaign]="formCampaign()"
     (closed)="closeFormBuilder()"
     (saved)="closeFormBuilder()"
   ></app-campaign-form-builder-modal>

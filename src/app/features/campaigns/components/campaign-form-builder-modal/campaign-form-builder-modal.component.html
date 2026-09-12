@@ -1,15 +1,114 @@
-<app-modal [isOpen]="isOpen" size="full" (closed)="close()">
+<app-modal [isOpen]="isOpen" size="xl" (closed)="close()">
   <div class="space-y-4">
-    <div>
-      <h3 class="text-lg font-semibold text-neutral">Formulario de pedidos</h3>
-      <p class="text-sm text-neutral/70">
-        Campos configurables para la campana {{ campaignId ?? '' }}.
-      </p>
+    <div class="border-b border-base-200 pb-4 pr-8">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-semibold text-neutral">
+            {{ currentForm() ? 'Editar formulario' : 'Crear formulario' }}
+          </h3>
+          <p class="text-sm text-neutral/70">
+            Configura el formulario paso a paso para evitar omitir información importante.
+          </p>
+        </div>
+        <span class="badge" [class.badge-success]="formStatus() === 'published'">
+          {{ formStatus() }}
+        </span>
+      </div>
+      <div class="mt-4 grid grid-cols-4 gap-2">
+        @for (step of stepLabels; track step; let index = $index) {
+          <button
+            type="button"
+            class="flex items-center gap-2 border-b-2 px-1 pb-2 text-left text-xs transition"
+            [class.border-primary]="activeStep() === index"
+            [class.text-primary]="activeStep() === index"
+            [class.border-base-200]="activeStep() !== index"
+            (click)="index <= activeStep() ? activeStep.set(index) : null"
+          >
+            <span
+              class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+              [class.bg-primary]="activeStep() === index"
+              [class.text-primary-content]="activeStep() === index"
+              [class.bg-base-200]="activeStep() !== index"
+            >
+              {{ index + 1 }}
+            </span>
+            <span class="hidden sm:inline">{{ step }}</span>
+          </button>
+        }
+      </div>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-[3fr_2fr]">
+    <section
+      class="grid gap-4 rounded-2xl border border-base-200 bg-base-100 p-4 md:grid-cols-2"
+      [class.hidden]="activeStep() !== 0"
+    >
+      <label class="form-control">
+        <span class="label-text mb-1 text-sm font-medium">Título del formulario</span>
+        <input
+          class="input input-bordered"
+          [value]="title()"
+          [disabled]="formStatus() === 'published'"
+          (input)="title.set($any($event.target).value)"
+        />
+      </label>
+      <label class="form-control">
+        <span class="label-text mb-1 text-sm font-medium">Sucursal</span>
+        <select
+          class="select select-bordered"
+          [value]="selectedBranchId() ?? ''"
+          [disabled]="!!currentForm()"
+          (change)="
+            selectedBranchId.set($any($event.target).value ? +$any($event.target).value : null)
+          "
+        >
+          <option value="">Selecciona una sucursal</option>
+          @for (branch of branches(); track branch.id) {
+            <option [value]="branch.id">{{ branch.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="form-control md:col-span-2">
+        <span class="label-text mb-1 text-sm font-medium">Descripción</span>
+        <textarea
+          class="textarea textarea-bordered"
+          [value]="description()"
+          [disabled]="formStatus() === 'published'"
+          (input)="description.set($any($event.target).value)"
+        ></textarea>
+      </label>
+      <label class="form-control">
+        <span class="label-text mb-1 text-sm font-medium">Plantilla</span>
+        <select
+          class="select select-bordered"
+          [value]="selectedTemplateId() ?? ''"
+          [disabled]="!!currentForm()"
+          (change)="
+            selectedTemplateId.set($any($event.target).value ? +$any($event.target).value : null)
+          "
+        >
+          <option value="">Selecciona una plantilla</option>
+          @for (template of templates(); track template.id) {
+            <option [value]="template.id">{{ template.name }}</option>
+          }
+        </select>
+      </label>
+      <div class="flex items-end">
+        <span
+          class="badge"
+          [class.badge-success]="formStatus() === 'published'"
+          [class.badge-warning]="formStatus() === 'draft'"
+        >
+          Estado: {{ formStatus() }}
+        </span>
+      </div>
+    </section>
+
+    <div class="grid gap-6 lg:grid-cols-[3fr_2fr]" [class.hidden]="activeStep() === 0">
       <div class="space-y-6">
-        <section class="rounded-2xl border border-base-200 bg-base-100 p-4">
+        <section
+          class="rounded-2xl border border-base-200 bg-base-100 p-4"
+          [class.hidden]="activeStep() !== 1"
+        >
           <div class="flex items-center justify-between gap-3">
             <div>
               <p class="text-sm font-semibold text-neutral">Productos</p>
@@ -22,35 +121,54 @@
           @if (productError()) {
             <p class="mt-2 text-xs text-error">{{ productError() }}</p>
           }
+          @if (loadError()) {
+            <p class="mt-2 text-xs text-error">{{ loadError() }}</p>
+          }
+          @if (isLoading()) {
+            <p class="mt-3 text-sm text-neutral/60">Cargando productos...</p>
+          }
           <div class="mt-3 grid gap-3">
             @for (product of products(); track product.id; let i = $index) {
-              <div class="grid gap-3 rounded-2xl border border-base-200 p-3 md:grid-cols-3">
-                <app-input
-                  label="Nombre"
-                  [value]="product.name"
-                  (valueChanged)="updateProduct(i, 'name', $event)"
-                ></app-input>
+              <div class="grid gap-3 rounded-2xl border border-base-200 p-3 md:grid-cols-4">
+                <div>
+                  <p class="text-sm font-semibold text-neutral">{{ product.name }}</p>
+                  <p class="text-xs text-neutral/60">{{ product.sku }}</p>
+                </div>
                 <label class="form-control w-full">
-                  <span class="label-text mb-1 text-sm font-medium text-neutral">Imagen</span>
+                  <span class="label-text mb-1 text-sm font-medium text-neutral"
+                    >Precio campaña</span
+                  >
                   <input
-                    type="file"
-                    accept="image/*"
-                    class="file-input file-input-bordered w-full"
-                    (change)="onProductFileChange(i, $any($event.target).files)"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    class="input input-bordered w-full"
+                    [value]="product.price"
+                    (input)="updateProduct(i, 'price', $any($event.target).value)"
                   />
-                  @if (product.fileName) {
-                    <span class="label-text-alt text-xs text-neutral/60">{{
-                      product.fileName
-                    }}</span>
-                  }
                 </label>
-                <app-input
-                  label="Precio"
-                  type="number"
-                  placeholder="S/ 0.00"
-                  [value]="product.price"
-                  (valueChanged)="updateProduct(i, 'price', $event)"
-                ></app-input>
+                <label class="form-control w-full">
+                  <span class="label-text mb-1 text-sm font-medium text-neutral"
+                    >Cantidad máxima</span
+                  >
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    class="input input-bordered w-full"
+                    [value]="product.maxQuantity"
+                    (input)="updateProduct(i, 'maxQuantity', $any($event.target).value)"
+                  />
+                </label>
+                <label class="label cursor-pointer justify-start gap-2">
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-primary"
+                    [checked]="product.isAvailable"
+                    (change)="setProductAvailability(i, $any($event.target).checked)"
+                  />
+                  <span class="label-text">Disponible</span>
+                </label>
                 <app-button size="sm" variant="ghost" icon="x" (clicked)="removeProduct(i)">
                   Quitar
                 </app-button>
@@ -59,7 +177,10 @@
           </div>
         </section>
 
-        <section class="rounded-2xl border border-base-200 bg-base-100 p-4">
+        <section
+          class="rounded-2xl border border-base-200 bg-base-100 p-4"
+          [class.hidden]="activeStep() !== 2"
+        >
           <p class="text-sm font-semibold text-neutral">Campos fijos y ubicacion</p>
           <p class="mt-1 text-xs text-neutral/60">
             Campos base que estaran disponibles en el formulario.
@@ -76,7 +197,10 @@
           </div>
         </section>
 
-        <section class="rounded-2xl border border-base-200 bg-base-100 p-4">
+        <section
+          class="rounded-2xl border border-base-200 bg-base-100 p-4"
+          [class.hidden]="activeStep() !== 2"
+        >
           <div class="flex items-center justify-between gap-3">
             <div>
               <p class="text-sm font-semibold text-neutral">Horario de entrega</p>
@@ -159,6 +283,16 @@
                       <option value="yes">Si</option>
                     </select>
                   </label>
+                  <label class="label cursor-pointer justify-start gap-2">
+                    <input
+                      type="checkbox"
+                      class="checkbox checkbox-primary"
+                      [checked]="field.enabled"
+                      [disabled]="formStatus() === 'published'"
+                      (change)="updateField(i, 'enabled', $any($event.target).checked)"
+                    />
+                    <span class="label-text">Visible</span>
+                  </label>
                 </div>
                 @if (field.type === 'select') {
                   <div class="mt-3 space-y-2">
@@ -196,15 +330,11 @@
             }
           </div>
         </section>
-
-        <div class="flex flex-wrap justify-end gap-2">
-          <app-button variant="secondary" (clicked)="close()">Cancelar</app-button>
-          <app-button (clicked)="save()">Guardar formulario</app-button>
-        </div>
       </div>
 
       <aside
         class="rounded-2xl border border-base-200 bg-base-100 p-4 lg:sticky lg:top-6 lg:self-start"
+        [class.hidden]="activeStep() !== 3"
       >
         <div class="flex items-center justify-between gap-3">
           <div>
@@ -291,6 +421,49 @@
           }
         </div>
       </aside>
+    </div>
+
+    <div class="flex flex-wrap justify-end gap-2 border-t border-base-200 pt-4">
+      <app-button variant="secondary" (clicked)="close()">Cancelar</app-button>
+      @if (activeStep() > 0) {
+        <app-button variant="ghost" [disabled]="isSaving()" (clicked)="previousStep()">
+          Anterior
+        </app-button>
+      }
+      @if (activeStep() < 3) {
+        <app-button [disabled]="isSaving() || isLoading()" (clicked)="nextStep()">
+          Siguiente
+        </app-button>
+      }
+      @if (activeStep() === 3 && currentForm() && formStatus() === 'published') {
+        <app-button
+          variant="outline"
+          [loading]="isSaving()"
+          [disabled]="isSaving()"
+          (clicked)="closeForm()"
+        >
+          Cerrar formulario
+        </app-button>
+      }
+      @if (activeStep() === 3 && currentForm() && formStatus() === 'draft') {
+        <app-button
+          variant="outline"
+          [loading]="isSaving()"
+          [disabled]="isSaving()"
+          (clicked)="publishForm()"
+        >
+          Publicar
+        </app-button>
+      }
+      @if (activeStep() === 3) {
+        <app-button
+          [loading]="isSaving()"
+          [disabled]="isSaving() || isLoading() || formStatus() !== 'draft'"
+          (clicked)="save()"
+        >
+          {{ isSaving() ? 'Guardando...' : 'Guardar formulario' }}
+        </app-button>
+      }
     </div>
   </div>
 </app-modal>

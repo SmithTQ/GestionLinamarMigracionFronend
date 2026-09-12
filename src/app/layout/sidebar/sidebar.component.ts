@@ -3,6 +3,17 @@ import { NgClass } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IconComponent } from '@shared/components/icon/icon.component';
 
+interface NavigationItem {
+  label: string;
+  icon: string;
+  route: string;
+}
+
+interface NavigationGroup {
+  label: string;
+  items: NavigationItem[];
+}
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -15,7 +26,9 @@ export class SidebarComponent {
   @Input() collapsed = false;
   @Output() collapsedChange = new EventEmitter<boolean>();
 
-  readonly groups = [
+  logoLoadFailed = false;
+
+  readonly groups: NavigationGroup[] = [
     {
       label: 'Operacion',
       items: [
@@ -24,6 +37,13 @@ export class SidebarComponent {
         { label: 'Rutas', icon: 'route', route: '/routes' },
         { label: 'Pedidos', icon: 'clipboard-list', route: '/orders' },
         { label: 'Reportes', icon: 'chart-bar', route: '/reports' },
+      ],
+    },
+    {
+      label: 'Gestion de catalogos',
+      items: [
+        { label: 'Distritos', icon: 'route', route: '/districts' },
+        { label: 'Productos', icon: 'package', route: '/products' },
       ],
     },
     {
@@ -37,5 +57,9 @@ export class SidebarComponent {
 
   toggle(): void {
     this.collapsedChange.emit(!this.collapsed);
+  }
+
+  onLogoError(): void {
+    this.logoLoadFailed = true;
   }
 }

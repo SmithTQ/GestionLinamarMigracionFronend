@@ -27,6 +27,8 @@ import {
   CampaignFormValue,
 } from '@features/campaigns/components/campaign-create-modal/campaign-create-modal.component';
 import { CampaignFormBuilderModalComponent } from '@features/campaigns/components/campaign-form-builder-modal/campaign-form-builder-modal.component';
+import { DistrictList } from '@features/districts/models/district.model';
+import { DistrictsService } from '@features/districts/services/districts.service';
 
 @Component({
   selector: 'app-campaigns-page',
@@ -46,6 +48,7 @@ import { CampaignFormBuilderModalComponent } from '@features/campaigns/component
 export class CampaignsPageComponent {
   private readonly campaignsStore = inject(CampaignsStore);
   private readonly authStore = inject(AuthStore);
+  private readonly districtsService = inject(DistrictsService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isCreateModalOpen = signal(false);
@@ -53,14 +56,19 @@ export class CampaignsPageComponent {
   readonly isFormBuilderOpen = signal(false);
   readonly isCloseConfirmationOpen = signal(false);
   readonly lastCreatedCampaignId = signal<number | null>(null);
+  readonly formCampaign = signal<Campaign | null>(null);
   readonly editingCampaign = signal<Campaign | null>(null);
   readonly campaignToClose = signal<Campaign | null>(null);
   readonly nameError = signal<string | undefined>(undefined);
+  readonly campaignDetailError = signal<string | undefined>(undefined);
+  readonly isLoadingCampaignDetail = signal(false);
   readonly isCreating = signal(false);
   readonly isMutating = signal(false);
   readonly pageSize = signal(10);
   readonly sort = signal<{ key: string; direction: 'asc' | 'desc' } | undefined>(undefined);
   readonly filterValues = signal<Record<string, string>>({});
+  readonly districtLists = signal<DistrictList[]>([]);
+  readonly catalogError = signal<string | null>(null);
   readonly canManage = computed(() => this.authStore.hasPermission('campaigns.manage'));
 
   readonly columns: TableColumn[] = [
@@ -138,22 +146,35 @@ export class CampaignsPageComponent {
         disabled: this.isMutating(),
       },
       { id: 'close', label: 'Cerrar', variant: 'outline', icon: 'x', disabled: this.isMutating() },
+      {
+        id: 'form',
+        label: 'Formulario',
+        variant: 'ghost',
+        icon: 'file-text',
+        disabled: this.isMutating(),
+      },
     ];
   });
 
   constructor() {
     this.loadCampaigns(1);
+    this.loadCampaignCatalogs();
   }
 
   openCreateModal(): void {
     this.nameError.set(undefined);
+    this.campaignDetailError.set(undefined);
     this.editingCampaign.set(null);
     this.isCreateModalOpen.set(true);
   }
 
-  closeCreateModal(): void {
+  closeCreateModal(force = false): void {
+    if (!force && (this.isCreating() || this.isLoadingCampaignDetail())) {
+      return;
+    }
     this.isCreateModalOpen.set(false);
     this.nameError.set(undefined);
+    this.campaignDetailError.set(undefined);
   }
 
   saveCampaign(form: CampaignFormValue): void {
@@ -169,6 +190,8 @@ export class CampaignsPageComponent {
       status: form.status,
       starts_on: form.startsOn,
       ends_on: form.endsOn,
+      branch_ids: form.branchIds.length ? form.branchIds : undefined,
+      district_list_ids: form.districtListId ? [form.districtListId] : undefined,
     };
 
     this.isCreating.set(true);
@@ -188,12 +211,13 @@ export class CampaignsPageComponent {
         next: (campaign) => {
           const current = this.campaignsStore.pagination();
           this.loadCampaigns(current.page);
-          this.closeCreateModal();
+          this.closeCreateModal(true);
           this.editingCampaign.set(null);
           if (editingCampaign) {
             return;
           }
           this.lastCreatedCampaignId.set(campaign.id);
+          this.formCampaign.set(campaign);
           this.isConfirmationOpen.set(true);
         },
         error: () => undefined,
@@ -204,8 +228,11 @@ export class CampaignsPageComponent {
     this.isConfirmationOpen.set(false);
   }
 
-  openFormBuilder(): void {
+  openFormBuilder(campaign?: Campaign): void {
     this.closeConfirmation();
+    if (campaign) {
+      this.formCampaign.set(campaign);
+    }
     this.isFormBuilderOpen.set(true);
   }
 
@@ -226,15 +253,39 @@ export class CampaignsPageComponent {
       this.campaignToClose.set(campaign);
       this.isCloseConfirmationOpen.set(true);
     }
+    if (event.action.id === 'form') {
+      this.openFormBuilder(campaign);
+    }
   }
 
   openEditModal(campaign: Campaign): void {
     this.nameError.set(undefined);
+    this.campaignDetailError.set(undefined);
     this.editingCampaign.set(campaign);
     this.isCreateModalOpen.set(true);
+    this.isLoadingCampaignDetail.set(true);
+    this.isMutating.set(true);
+    this.campaignsStore
+      .get(campaign.id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.isLoadingCampaignDetail.set(false);
+          this.isMutating.set(false);
+        }),
+      )
+      .subscribe({
+        next: (detail) => {
+          this.editingCampaign.set(detail);
+        },
+        error: () => this.campaignDetailError.set('No se pudo cargar el detalle de la campana.'),
+      });
   }
 
   closeCloseConfirmation(): void {
+    if (this.isMutating()) {
+      return;
+    }
     this.isCloseConfirmationOpen.set(false);
     this.campaignToClose.set(null);
   }
@@ -297,6 +348,18 @@ export class CampaignsPageComponent {
       filters: this.filterValues(),
     };
     this.campaignsStore.load(query);
+  }
+
+  private loadCampaignCatalogs(): void {
+    this.districtsService
+      .listDistrictLists({ page: 1, pageSize: 100 })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (districtLists) => {
+          this.districtLists.set(districtLists.items);
+        },
+        error: () => this.catalogError.set('No se pudieron cargar las listas de cobertura.'),
+      });
   }
 
   private formatStatus(status: Campaign['status']): string {

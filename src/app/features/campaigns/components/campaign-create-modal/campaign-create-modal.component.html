@@ -1,5 +1,13 @@
 <app-modal [isOpen]="isOpen" (closed)="close()">
-  <div class="space-y-4">
+  <div class="relative space-y-4">
+    @if (isLoadingData) {
+      <div
+        class="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-base-100/75 backdrop-blur-[1px]"
+        aria-live="polite"
+      >
+        <app-loading label="Cargando detalle de la campana..."></app-loading>
+      </div>
+    }
     <div>
       <h3 class="text-lg font-semibold text-neutral">
         {{ campaign ? 'Editar campana' : 'Nueva campana' }}
@@ -7,11 +15,15 @@
       <p class="text-sm text-neutral/70">
         Completa la informacion principal para registrar la campana.
       </p>
+      @if (detailError) {
+        <p class="mt-2 text-sm text-error">{{ detailError }}</p>
+      }
     </div>
     <div class="grid gap-3 md:grid-cols-2">
       <app-input
         label="Nombre"
         placeholder="Ej: Madre 2026"
+        [disabled]="isLoadingData || !!detailError"
         [value]="form.controls.name.value"
         [error]="
           nameError ||
@@ -24,6 +36,7 @@
       <app-input
         label="Fecha inicio"
         type="date"
+        [disabled]="isLoadingData || !!detailError"
         [value]="form.controls.startsOn.value"
         [error]="
           form.controls.startsOn.touched && form.controls.startsOn.invalid
@@ -35,6 +48,7 @@
       <app-input
         label="Fecha fin"
         type="date"
+        [disabled]="isLoadingData || !!detailError"
         [value]="form.controls.endsOn.value"
         [error]="
           form.hasError('dateRange') ? 'La fecha fin debe ser posterior al inicio.' : undefined
@@ -45,6 +59,7 @@
         <span class="label-text text-sm font-medium text-neutral">Estado</span>
         <select
           class="select select-bordered w-full"
+          [disabled]="isLoadingData || !!detailError"
           [value]="form.controls.status.value"
           (change)="form.controls.status.setValue($any($event.target).value)"
         >
@@ -54,10 +69,39 @@
           <option value="cancelled">Cancelada</option>
         </select>
       </label>
+      <label class="form-control w-full md:col-span-2">
+        <span class="label-text text-sm font-medium text-neutral">Lista de cobertura</span>
+        <select
+          class="select select-bordered w-full"
+          [disabled]="!districtLists.length || isLoadingData || !!detailError"
+          [value]="form.controls.districtListId.value ?? ''"
+          (change)="updateDistrictList($event)"
+        >
+          <option value="">
+            {{
+              districtLists.length
+                ? 'Selecciona una lista para aplicar'
+                : 'No hay listas disponibles'
+            }}
+          </option>
+          @for (list of districtLists; track list.id) {
+            <option [value]="list.id">{{ list.code }} - {{ list.name }}</option>
+          }
+        </select>
+        <span class="label-text-alt text-xs text-neutral/60">
+          La lista seleccionada define los distritos de cobertura de la campana.
+        </span>
+      </label>
     </div>
     <div class="flex flex-wrap justify-end gap-2">
-      <app-button variant="secondary" (clicked)="close()">Cancelar</app-button>
-      <app-button [loading]="isSaving" [disabled]="isSaving" (clicked)="submit()">
+      <app-button variant="secondary" [disabled]="isSaving || isLoadingData" (clicked)="close()">
+        Cancelar
+      </app-button>
+      <app-button
+        [loading]="isSaving"
+        [disabled]="isSaving || isLoadingData || !!detailError"
+        (clicked)="submit()"
+      >
         {{ isSaving ? 'Guardando...' : campaign ? 'Guardar cambios' : 'Crear campana' }}
       </app-button>
     </div>

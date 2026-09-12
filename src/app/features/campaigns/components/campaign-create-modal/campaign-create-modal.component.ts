@@ -17,8 +17,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { Campaign } from '@features/campaigns/models/campaign.model';
+import { DistrictList } from '@features/districts/models/district.model';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { InputComponent } from '@shared/components/input/input.component';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 
 export interface CampaignFormValue {
@@ -26,20 +28,25 @@ export interface CampaignFormValue {
   status: Campaign['status'];
   startsOn: string;
   endsOn?: string;
+  branchIds: number[];
+  districtListId: number | null;
 }
 
 @Component({
   selector: 'app-campaign-create-modal',
   standalone: true,
-  imports: [ButtonComponent, InputComponent, ModalComponent, ReactiveFormsModule],
+  imports: [ButtonComponent, InputComponent, LoadingComponent, ModalComponent, ReactiveFormsModule],
   templateUrl: './campaign-create-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CampaignCreateModalComponent implements OnChanges {
   @Input() isOpen = false;
   @Input() isSaving = false;
+  @Input() isLoadingData = false;
   @Input() campaign: Campaign | null = null;
   @Input() nameError?: string;
+  @Input() detailError?: string;
+  @Input() districtLists: DistrictList[] = [];
   @Output() closed = new EventEmitter<void>();
   @Output() submitted = new EventEmitter<CampaignFormValue>();
 
@@ -50,13 +57,15 @@ export class CampaignCreateModalComponent implements OnChanges {
       startsOn: ['', Validators.required],
       endsOn: [''],
       status: ['draft' as Campaign['status']],
+      branchIds: [[] as number[]],
+      districtListId: [null as number | null],
     },
     { validators: dateRangeValidator },
   );
 
   ngOnChanges(changes: SimpleChanges): void {
     const isOpening = changes['isOpen']?.currentValue === true;
-    if (changes['campaign'] || isOpening) {
+    if (changes['campaign'] || changes['districtLists'] || isOpening) {
       this.loadCampaign(this.campaign);
     }
   }
@@ -72,15 +81,32 @@ export class CampaignCreateModalComponent implements OnChanges {
       status: values.status,
       startsOn: values.startsOn,
       endsOn: values.endsOn || undefined,
+      branchIds: values.branchIds,
+      districtListId: values.districtListId,
     });
   }
 
   close(): void {
+    if (this.isSaving || this.isLoadingData) {
+      return;
+    }
     this.closed.emit();
   }
 
+  updateDistrictList(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.form.controls.districtListId.setValue(value ? Number(value) : null);
+  }
+
   reset(): void {
-    this.form.reset({ name: '', startsOn: '', endsOn: '', status: 'draft' });
+    this.form.reset({
+      name: '',
+      startsOn: '',
+      endsOn: '',
+      status: 'draft',
+      branchIds: [],
+      districtListId: null,
+    });
     this.form.markAsUntouched();
   }
 
@@ -94,6 +120,8 @@ export class CampaignCreateModalComponent implements OnChanges {
       startsOn: campaign.startsOn,
       endsOn: campaign.endsOn ?? '',
       status: campaign.status,
+      branchIds: campaign.branches?.map((branch) => branch.id) ?? [],
+      districtListId: campaign.districtLists?.[0]?.id ?? null,
     });
     this.form.markAsUntouched();
   }

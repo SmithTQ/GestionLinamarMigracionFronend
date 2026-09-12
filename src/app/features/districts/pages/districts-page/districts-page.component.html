@@ -1,0 +1,143 @@
+<app-page-container>
+  <section class="flex flex-wrap items-center justify-between gap-4">
+    <div class="space-y-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="badge badge-primary badge-outline">Cobertura</span>
+        <span class="badge badge-secondary">Catalogos maestros</span>
+      </div>
+      <h1 class="text-3xl font-semibold text-neutral">Distritos y listas de cobertura</h1>
+      <p class="text-sm text-neutral/70">
+        Administra el catalogo oficial y las plantillas reutilizables para campanas y formularios.
+      </p>
+    </div>
+    @if (canManage()) {
+      <app-button
+        icon="plus"
+        [disabled]="mode() === 'districts'"
+        [ariaLabel]="
+          mode() === 'districts'
+            ? 'La creacion de distritos esta desactivada'
+            : 'Crear lista de cobertura'
+        "
+        (clicked)="openCreate()"
+      >
+        {{ mode() === 'districts' ? 'Crear distrito' : 'Crear lista' }}
+      </app-button>
+    }
+  </section>
+
+  <div class="tabs tabs-boxed mt-6 w-fit">
+    <button
+      type="button"
+      class="tab"
+      [class.tab-active]="mode() === 'districts'"
+      (click)="changeMode('districts')"
+    >
+      Distritos
+    </button>
+    <button
+      type="button"
+      class="tab"
+      [class.tab-active]="mode() === 'lists'"
+      (click)="changeMode('lists')"
+    >
+      Listas reutilizables
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="mt-4 rounded-xl bg-error/10 p-3 text-sm text-error">{{ error() }}</p>
+  }
+
+  @if (mode() === 'districts') {
+    <app-table
+      class="mt-4 block"
+      title="Catalogo maestro de distritos"
+      description="Distritos activos e inactivos disponibles para configurar cobertura."
+      size="sm"
+      [columns]="districtColumns"
+      [rows]="districtRows()"
+      [actions]="actions()"
+      [useContextMenuActions]="true"
+      [loading]="isLoading()"
+      [serverSide]="true"
+      [sort]="sort()"
+      [filterValues]="filters()"
+      [pagination]="pagination()"
+      (actionClicked)="onAction($event)"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+      (sortChanged)="changeSort($event)"
+      (filterChanged)="changeFilter($event)"
+    ></app-table>
+  } @else {
+    <app-table
+      class="mt-4 block"
+      title="Listas de cobertura"
+      description="Plantillas que pueden reutilizarse en campanas y formularios."
+      size="sm"
+      [columns]="listColumns"
+      [rows]="listRows()"
+      [actions]="actions()"
+      [useContextMenuActions]="true"
+      [loading]="isLoading()"
+      [serverSide]="true"
+      [sort]="sort()"
+      [filterValues]="filters()"
+      [pagination]="pagination()"
+      (actionClicked)="onAction($event)"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+      (sortChanged)="changeSort($event)"
+      (filterChanged)="changeFilter($event)"
+    ></app-table>
+  }
+
+  <app-district-form-modal
+    [isOpen]="districtModalOpen()"
+    [district]="editingDistrict()"
+    [isSaving]="isSaving()"
+    (closed)="closeModals()"
+    (submitted)="saveDistrict($event)"
+  ></app-district-form-modal>
+
+  <app-district-list-form-modal
+    [isOpen]="listModalOpen()"
+    [districtList]="editingList()"
+    [districts]="districtOptions()"
+    [departments]="departments()"
+    [provinces]="provinces()"
+    [defaultDepartmentCode]="defaultDepartmentCode()"
+    [isSaving]="isSaving() || optionsLoading() || isLoadingDetail()"
+    [isLoadingDistricts]="optionsLoading()"
+    (departmentChanged)="onDistrictDepartmentChanged($event)"
+    (provinceChanged)="onDistrictProvinceChanged($event)"
+    (closed)="closeModals()"
+    (submitted)="saveDistrictList($event)"
+  ></app-district-list-form-modal>
+
+  <app-modal [isOpen]="deleteModalOpen()" size="sm" (closed)="closeDeleteModal()">
+    <div class="space-y-4">
+      <div>
+        <h2 class="text-lg font-semibold text-neutral">Desactivar registro</h2>
+        <p class="mt-1 text-sm text-neutral/70">
+          Esta accion no elimina fisicamente <strong>{{ itemToDelete()?.name }}</strong
+          >.
+        </p>
+      </div>
+      <div class="flex justify-end gap-2">
+        <app-button variant="secondary" [disabled]="isDeleting()" (clicked)="closeDeleteModal()">
+          Cancelar
+        </app-button>
+        <app-button
+          variant="outline"
+          [loading]="isDeleting()"
+          [disabled]="isDeleting()"
+          (clicked)="confirmDelete()"
+        >
+          Desactivar
+        </app-button>
+      </div>
+    </div>
+  </app-modal>
+</app-page-container>

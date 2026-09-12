@@ -39,6 +39,25 @@ export const routes: Routes = [
           import('@features/campaigns/feature.routes').then((m) => m.CAMPAIGNS_ROUTES),
       },
       {
+        path: 'districts',
+        canActivate: [permissionGuard],
+        data: {
+          permissions: ['districts.view', 'district_lists.view'],
+          requireAllPermissions: true,
+        },
+        loadChildren: () =>
+          import('@features/districts/feature.routes').then((m) => m.DISTRICTS_ROUTES),
+      },
+      {
+        path: 'products',
+        canActivate: [permissionGuard],
+        data: { permissions: ['products.view'] },
+        loadComponent: () =>
+          import('@features/products/pages/products-page/products-page.component').then(
+            (m) => m.ProductsPageComponent,
+          ),
+      },
+      {
         path: 'ui-kit',
         loadChildren: () => import('@features/ui-kit/feature.routes').then((m) => m.UI_KIT_ROUTES),
       },

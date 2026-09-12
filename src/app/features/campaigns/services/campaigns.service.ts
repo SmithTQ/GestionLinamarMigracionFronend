@@ -3,6 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Campaign, CampaignPage } from '../models/campaign.model';
+import { District, DistrictList } from '@features/districts/models/district.model';
+import { DistrictDto, DistrictListDto } from '@features/districts/services/district.dto';
 import { CampaignListResponse, CampaignPayload, CampaignResponse } from './campaign.dto';
 
 export interface CampaignListQuery {
@@ -45,7 +47,7 @@ export class CampaignsService {
     }
     return this.http.get<CampaignListResponse>(this.baseUrl, { params }).pipe(
       map((response) => ({
-        items: response.datos.map(mapCampaign),
+        items: getListData(response.datos).map(mapCampaign),
         page: response.paginacion.current_page,
         from: response.paginacion.from,
         to: response.paginacion.to,
@@ -72,6 +74,12 @@ export class CampaignsService {
 
   remove(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  get(id: number): Observable<Campaign> {
+    return this.http
+      .get<CampaignResponse>(`${this.baseUrl}/${id}`)
+      .pipe(map((response) => mapCampaign(response.datos)));
   }
 }
 
@@ -113,5 +121,41 @@ function mapCampaign(dto: CampaignResponse['datos']): Campaign {
     ordersCount: dto.orders_count,
     deliveredCount: dto.delivered_count,
     totalObtained: dto.total_obtained,
+    districtLists: (dto.district_lists ?? []).map(mapDistrictList),
+    branches: (dto.branches ?? []).map(({ id, code, name }) => ({ id, code, name })),
+    districts: (dto.districts ?? []).map(({ id, code, name, province, department }) => ({
+      id,
+      code,
+      name,
+      province: province ?? undefined,
+      department: department ?? undefined,
+    })),
   };
+}
+
+function mapDistrictList(dto: DistrictListDto): DistrictList {
+  return {
+    id: dto.id,
+    code: dto.code,
+    name: dto.name,
+    description: dto.description ?? undefined,
+    isActive: dto.is_active ?? true,
+    districtCount: dto.district_count,
+    districts: (dto.districts ?? []).map(mapDistrict),
+  };
+}
+
+function mapDistrict(dto: DistrictDto): District {
+  return {
+    id: dto.id,
+    code: dto.code,
+    name: dto.name,
+    province: dto.province ?? '',
+    department: dto.department ?? '',
+    isActive: dto.is_active ?? true,
+  };
+}
+
+function getListData<T>(value: T[] | { data: T[] }): T[] {
+  return Array.isArray(value) ? value : value.data;
 }

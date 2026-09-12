@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Output, DOCUMENT } from '@angular/core';
 
 import { computed, inject, signal } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { AuthStore } from '@features/auth/store/auth.store';
@@ -25,6 +26,7 @@ export class HeaderComponent {
   private readonly router = inject(Router);
 
   readonly isDark = signal(false);
+  readonly isLoggingOut = signal(false);
   readonly user = this.authStore.user;
   readonly userName = computed(() => this.user()?.name ?? 'Invitado');
   readonly userRole = computed(() => {
@@ -43,9 +45,15 @@ export class HeaderComponent {
   }
 
   logout(): void {
-    this.authService.logout().subscribe(() => {
-      void this.router.navigate(['/auth/login']);
-    });
+    if (this.isLoggingOut()) {
+      return;
+    }
+
+    this.isLoggingOut.set(true);
+    this.authService
+      .logout()
+      .pipe(finalize(() => this.isLoggingOut.set(false)))
+      .subscribe(() => void this.router.navigate(['/auth/login']));
   }
 
   private applyTheme(theme: 'linamar' | 'linamar-dark'): void {

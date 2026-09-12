@@ -48,7 +48,20 @@
         class="menu dropdown-content z-[1] w-44 rounded-box bg-base-100 p-2 text-sm shadow"
       >
         <li>
-          <button type="button" (click)="logout()">Cerrar sesion</button>
+          <button
+            type="button"
+            class="flex w-full items-center gap-2"
+            [disabled]="isLoggingOut()"
+            [attr.aria-busy]="isLoggingOut()"
+            (click)="logout()"
+          >
+            @if (isLoggingOut()) {
+              <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
+              <span>Cerrando sesion...</span>
+            } @else {
+              <span>Cerrar sesion</span>
+            }
+          </button>
         </li>
       </ul>
     </div>

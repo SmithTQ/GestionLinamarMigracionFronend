@@ -6,7 +6,20 @@
     <div
       class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-xs font-bold text-white"
     >
-      LM
+      @if (!logoLoadFailed) {
+        <img
+          src="assets/brand/Logo-perfil-background-blanco.png"
+          alt="Logo de Linamar"
+          class="h-10 w-10 rounded-2xl bg-white object-contain p-0.5"
+          (error)="onLogoError()"
+        />
+      } @else {
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-xs font-bold text-white"
+        >
+          LM
+        </div>
+      }
     </div>
     @if (!collapsed) {
       <div class="flex flex-1 items-center justify-between">

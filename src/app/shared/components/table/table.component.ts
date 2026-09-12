@@ -21,7 +21,7 @@ import {
 } from '@shared/components/context-menu/context-menu.component';
 
 export type TableColumnAlign = 'left' | 'center' | 'right';
-export type TableColumnType = 'text' | 'badge' | 'date' | 'currency';
+export type TableColumnType = 'text' | 'badge' | 'date' | 'currency' | 'image';
 export type TableSize = 'xs' | 'sm' | 'md' | 'lg';
 
 export interface TableColumn {
@@ -96,6 +96,10 @@ export class TableComponent implements OnChanges, OnDestroy {
   @Output() filterChanged = new EventEmitter<{ key: string; value: string }>();
   @Output() pageChanged = new EventEmitter<number>();
   @Output() pageSizeChanged = new EventEmitter<number>();
+  @Output() imageClicked = new EventEmitter<{
+    row: Record<string, unknown>;
+    url: string;
+  }>();
 
   contextMenuOpen = false;
   contextMenuPosition = { x: 0, y: 0 };
@@ -148,6 +152,9 @@ export class TableComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['sort'] && !this.sort) {
+      this.localSort = undefined;
+    }
     if (changes['filterValues']) {
       Object.keys(this.filterValuesState).forEach((key) => delete this.filterValuesState[key]);
       Object.assign(this.filterValuesState, this.filterValues);
@@ -266,6 +273,13 @@ export class TableComponent implements OnChanges, OnDestroy {
 
   filterValue(key: string): string {
     return this.filterValuesState[key] ?? '';
+  }
+
+  onImageClick(row: Record<string, unknown>, column: TableColumn): void {
+    const url = this.formatCell(row, column);
+    if (url) {
+      this.imageClicked.emit({ row, url });
+    }
   }
 
   formatCell(row: Record<string, unknown>, column: TableColumn): string {
