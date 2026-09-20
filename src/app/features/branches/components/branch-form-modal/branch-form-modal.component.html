@@ -1,0 +1,43 @@
+<app-modal [isOpen]="isOpen" size="lg" (closed)="closed.emit()"
+  ><form class="modal-form-stack" [formGroup]="form" (ngSubmit)="submit()">
+    <div>
+      <h3 class="text-xl font-semibold">{{ branch ? 'Editar sucursal' : 'Nueva sucursal' }}</h3>
+      <p class="text-sm text-neutral/70">La ubicación será el punto de partida de las rutas.</p>
+    </div>
+    @if (error) {
+      <p class="rounded-lg bg-error/10 p-3 text-sm text-error">{{ error }}</p>
+    }
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="form-control"
+        ><span class="label-text font-semibold">Código</span
+        ><input class="input input-bordered" formControlName="code" placeholder="LIM-01" /></label
+      ><label class="form-control"
+        ><span class="label-text font-semibold">Nombre</span
+        ><input class="input input-bordered" formControlName="name" placeholder="Sucursal Lima"
+      /></label>
+    </div>
+    <label class="form-control"
+      ><span class="label-text font-semibold">Dirección</span
+      ><input class="input input-bordered" formControlName="address" placeholder="Av. Ejemplo 123"
+    /></label>
+    <section>
+      <p class="mb-2 text-sm font-semibold">Ubicación de partida</p>
+      <app-location-picker
+        [latitude]="form.controls.latitude.value"
+        [longitude]="form.controls.longitude.value"
+        (locationChange)="setLocation($event)"
+      ></app-location-picker>
+    </section>
+    <label class="label cursor-pointer justify-start gap-3"
+      ><input type="checkbox" class="checkbox checkbox-primary" formControlName="isActive" /><span
+        class="label-text"
+        >Sucursal activa</span
+      ></label
+    >
+    <div class="flex justify-end gap-2">
+      <app-button variant="secondary" [disabled]="saving" (clicked)="closed.emit()"
+        >Cancelar</app-button
+      ><app-button type="submit" [loading]="saving" [disabled]="saving">Guardar</app-button>
+    </div>
+  </form></app-modal
+>

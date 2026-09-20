@@ -1,0 +1,86 @@
+.location-map-wrapper:fullscreen {
+  background: hsl(var(--b2));
+}
+
+.location-map-wrapper:fullscreen .location-map {
+  min-height: 100vh;
+}
+
+.location-search input {
+  min-height: 2.5rem;
+}
+
+.location-search {
+  width: min(28rem, calc(100% - 7rem));
+}
+
+.location-search-input,
+.location-search-button,
+.location-fullscreen-button {
+  border: 1px solid #dadce0;
+  background: #fff;
+  color: #3c4043;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 30%);
+}
+
+.location-search-input {
+  border-radius: 0.5rem 0 0 0.5rem;
+  padding: 0 0.75rem;
+  outline: none;
+}
+
+.location-search-input:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 1px 4px rgb(26 115 232 / 35%);
+}
+
+.location-search-button {
+  border-left: 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 0 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.location-search-button:hover,
+.location-fullscreen-button:hover {
+  background: #f8f9fa;
+}
+
+.location-search-button:disabled,
+.location-fullscreen-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.location-suggestions {
+  border: 1px solid #dadce0;
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 25%);
+  color: #3c4043;
+}
+
+.location-suggestion {
+  padding: 0.65rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.location-suggestion:hover,
+.location-suggestion:focus {
+  background: #f8f9fa;
+  outline: none;
+}
+
+.location-fullscreen-button {
+  min-height: 2.25rem;
+  min-width: 2.25rem;
+  border-radius: 0.5rem;
+  padding: 0 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.location-map {
+  min-height: 18rem;
+  width: 100%;
+}

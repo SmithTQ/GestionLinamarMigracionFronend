@@ -1,0 +1,105 @@
+.notification-center {
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.75rem;
+  pointer-events: none;
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  width: min(calc(100vw - 2rem), 25rem);
+  z-index: 2147483000;
+}
+
+.notification-card {
+  align-items: flex-start;
+  animation: notification-enter 180ms ease-out;
+  background: hsl(var(--b1) / 0.98);
+  border: 1px solid hsl(var(--bc) / 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 18px 42px rgb(15 23 42 / 24%);
+  display: flex;
+  gap: 0.75rem;
+  min-height: 5.25rem;
+  overflow: hidden;
+  padding: 0.85rem 0.9rem 0.85rem 0;
+  pointer-events: auto;
+}
+
+.notification-card__accent {
+  align-self: stretch;
+  background: hsl(var(--p));
+  border-radius: 0 0.4rem 0.4rem 0;
+  flex: 0 0 0.3rem;
+}
+
+.notification-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-card__title {
+  color: hsl(var(--bc));
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.notification-card__message {
+  color: hsl(var(--bc) / 0.72);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  margin: 0.28rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.notification-card__close {
+  background: transparent;
+  border: 0;
+  color: hsl(var(--bc) / 0.52);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.2rem;
+}
+
+.notification-card__close:hover,
+.notification-card__close:focus-visible {
+  color: hsl(var(--bc));
+  outline: none;
+  text-decoration: underline;
+}
+
+.notification-card--success .notification-card__accent {
+  background: hsl(var(--su));
+}
+
+.notification-card--error .notification-card__accent {
+  background: hsl(var(--er));
+}
+
+.notification-card--warning .notification-card__accent {
+  background: hsl(var(--wa));
+}
+
+.notification-card--info .notification-card__accent {
+  background: hsl(var(--in));
+}
+
+@keyframes notification-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-card {
+    animation: none;
+  }
+}

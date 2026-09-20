@@ -8,13 +8,14 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ApiErrorBannerComponent } from '@shared/components/api-error-banner/api-error-banner.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
+import { HttpActivityService } from '@core/http/http-activity.service';
+import { NotificationsComponent } from '@shared/components/notifications/notifications.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ApiErrorBannerComponent, LoadingComponent],
+  imports: [RouterOutlet, NotificationsComponent, LoadingComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,8 +23,10 @@ import { LoadingComponent } from '@shared/components/loading/loading.component';
 export class AppComponent {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly httpActivity = inject(HttpActivityService);
 
   readonly isNavigating = signal(false);
+  readonly isHttpBusy = this.httpActivity.isBusy;
 
   constructor() {
     this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {

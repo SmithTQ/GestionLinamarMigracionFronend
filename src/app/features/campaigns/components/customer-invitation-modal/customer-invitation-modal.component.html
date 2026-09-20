@@ -1,0 +1,87 @@
+<app-modal [isOpen]="isOpen" size="md" (closed)="closed.emit()">
+  @if (isLoadingData) {
+    <div class="modal-loading-state flex justify-center p-8">
+      <app-loading label="Cargando formulario publicado..."></app-loading>
+    </div>
+  } @else {
+    <div class="modal-form-stack modal-form-content">
+      <div>
+        <h3 class="text-lg font-semibold text-neutral">Generar invitación</h3>
+        <p class="mt-1 text-sm text-neutral/60">
+          Comparte un formulario personalizado con un cliente.
+        </p>
+      </div>
+
+      @if (invitation; as created) {
+        <div class="modal-form-section rounded-xl bg-success/10 p-4">
+          <p class="text-sm font-medium text-success">Invitación generada correctamente.</p>
+          <label class="form-control">
+            <span class="label-text mb-1 text-xs font-medium">Enlace del formulario</span>
+            <input class="input input-bordered input-sm" readonly [value]="created.form_url" />
+          </label>
+          <div class="modal-form-actions border-0 p-0">
+            <a
+              class="btn btn-outline btn-sm"
+              [href]="created.form_url"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Abrir formulario
+            </a>
+            <a
+              class="btn btn-success btn-sm"
+              [href]="created.whatsapp_url"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Compartir por WhatsApp
+            </a>
+          </div>
+        </div>
+      } @else {
+        <app-input
+          label="Nombre completo"
+          placeholder="Ej: María Pérez"
+          [value]="fullName()"
+          [disabled]="isSaving"
+          (valueChanged)="fullName.set($event)"
+        ></app-input>
+        <app-input
+          label="WhatsApp"
+          placeholder="Ej: 51999999999"
+          [value]="whatsappNumber()"
+          [disabled]="isSaving"
+          (valueChanged)="whatsappNumber.set($event)"
+        ></app-input>
+        <app-input
+          label="Correo electrónico (opcional)"
+          type="email"
+          [value]="email()"
+          [disabled]="isSaving"
+          (valueChanged)="email.set($event)"
+        ></app-input>
+        <label class="form-control">
+          <span class="label-text mb-1 text-sm font-medium">Vencimiento (opcional)</span>
+          <input
+            type="datetime-local"
+            class="input input-bordered"
+            [disabled]="isSaving"
+            [value]="expiresAt()"
+            (input)="expiresAt.set($any($event.target).value)"
+          />
+        </label>
+        @if (error) {
+          <p class="text-sm text-error" role="alert">{{ error }}</p>
+        }
+        <div class="modal-form-actions">
+          <app-button variant="secondary" [disabled]="isSaving" (clicked)="closed.emit()">
+            Cancelar
+          </app-button>
+          <app-button [loading]="isSaving" [disabled]="isSaving" (clicked)="submit()">
+            {{ isSaving ? 'Generando...' : 'Generar invitación' }}
+          </app-button>
+        </div>
+      }
+    </div>
+  }
+</app-modal>

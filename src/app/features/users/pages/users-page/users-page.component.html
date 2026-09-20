@@ -1,0 +1,37 @@
+<app-page-container
+  ><section class="flex items-center justify-between gap-4">
+    <div>
+      <span class="badge badge-primary badge-outline">Administración</span>
+      <h1 class="mt-2 text-3xl font-semibold">Usuarios</h1>
+      <p class="text-sm text-neutral/70">Gestiona accesos, roles y ámbitos operativos.</p>
+    </div>
+    <app-button icon="plus" (clicked)="open()">Nuevo usuario</app-button>
+  </section>
+  <app-table
+    class="mt-5"
+    title="Usuarios"
+    [columns]="columns"
+    [rows]="rows()"
+    [loading]="loading()"
+    [actions]="actions"
+    [useContextMenuActions]="true"
+    [serverSide]="true"
+    [pagination]="pagination()"
+    (pageChanged)="load($event)"
+    (pageSizeChanged)="load(1, $event)"
+    (actionClicked)="action($event)"
+  ></app-table
+  ><app-user-form-modal
+    [isOpen]="modal()"
+    [user]="editing()"
+    [roles]="assignableRoles()"
+    [branches]="branches()"
+    [fixedRoleId]="fixedRoleId()"
+    [lockedBranchId]="lockedBranchId()"
+    [lockedBranchName]="activeBranch()?.name ?? ''"
+    [saving]="saving()"
+    [error]="error()"
+    (closed)="modal.set(false)"
+    (submitted)="save($event)"
+  ></app-user-form-modal
+></app-page-container>

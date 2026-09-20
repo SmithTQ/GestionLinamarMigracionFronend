@@ -1,0 +1,60 @@
+<app-modal [isOpen]="isOpen" size="md" (closed)="closed.emit()">
+  <div class="modal-form-stack">
+    <div>
+      <p class="text-lg font-semibold text-neutral">Nuevo campo personalizado</p>
+      <p class="mt-1 text-sm text-neutral/60">
+        Se guardará en la plantilla actual y quedará disponible para este formulario y los futuros.
+      </p>
+    </div>
+
+    <app-input
+      label="Nombre visible"
+      placeholder="Ej: Número de factura"
+      [value]="label()"
+      [disabled]="isSaving"
+      (valueChanged)="label.set($event)"
+    ></app-input>
+
+    <app-input
+      label="Clave técnica"
+      placeholder="Ej: numero_factura"
+      [value]="key()"
+      [disabled]="isSaving"
+      (valueChanged)="key.set($event)"
+    ></app-input>
+    <p class="-mt-2 text-xs text-neutral/60">
+      Usa minúsculas, números y guion bajo. No podrá repetirse dentro de la plantilla.
+    </p>
+
+    <label class="form-control">
+      <span class="label-text mb-1 text-sm font-medium">Tipo de respuesta</span>
+      <select
+        class="select select-bordered"
+        [value]="type()"
+        [disabled]="isSaving"
+        (change)="type.set($any($event.target).value)"
+      >
+        <option value="text">Texto</option>
+        <option value="textarea">Texto largo</option>
+        <option value="number">Número</option>
+        <option value="date">Fecha</option>
+        <option value="phone">Teléfono</option>
+        <option value="select">Lista de opciones</option>
+        <option value="file">Archivo de imagen</option>
+      </select>
+    </label>
+
+    @if (error) {
+      <p class="text-sm text-error" role="alert">{{ error }}</p>
+    }
+
+    <div class="flex justify-end gap-2 border-t border-base-200 pt-4">
+      <app-button variant="secondary" [disabled]="isSaving" (clicked)="closed.emit()">
+        Cancelar
+      </app-button>
+      <app-button [loading]="isSaving" [disabled]="isSaving" (clicked)="submit()">
+        {{ isSaving ? 'Guardando...' : 'Crear campo' }}
+      </app-button>
+    </div>
+  </div>
+</app-modal>

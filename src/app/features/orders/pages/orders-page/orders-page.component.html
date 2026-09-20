@@ -1,44 +1,410 @@
 <app-page-container>
   <section class="flex flex-wrap items-center justify-between gap-4">
     <div class="space-y-2">
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="badge badge-primary badge-outline">Pedidos</span>
-        <span class="badge badge-secondary">Demo tabla operativa</span>
-      </div>
-      <h1 class="text-3xl font-semibold text-neutral">Gestion de pedidos</h1>
+      <span class="badge badge-primary badge-outline">Pedidos</span>
+      <h1 class="text-3xl font-semibold text-neutral">Gestión de pedidos</h1>
       <p class="text-sm text-neutral/70">
-        Tabla con paginacion, filtros por columna, sorting y acciones por registro.
+        Consulta y administra los pedidos registrados desde los formularios publicados.
       </p>
     </div>
-    <div class="flex flex-wrap gap-2">
-      <app-button variant="secondary" icon="download">Exportar</app-button>
-      <app-button icon="external-link" (clicked)="openModal()">Abrir modal</app-button>
-      <app-button icon="plus">Nuevo pedido</app-button>
+    <app-button variant="secondary" icon="refresh-cw" [loading]="isLoading()" (clicked)="load()">
+      Actualizar
+    </app-button>
+  </section>
+
+  @if (loadError()) {
+    <div class="alert alert-error" role="alert">{{ loadError() }}</div>
+  }
+  @if (actionError()) {
+    <div class="alert alert-error" role="alert">{{ actionError() }}</div>
+  }
+
+  <section
+    class="rounded-2xl border border-base-200 bg-base-100 p-4 shadow-sm"
+    aria-label="Filtros de pedidos"
+  >
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <h2 class="font-semibold text-neutral">Filtrar pedidos</h2>
+        <p class="text-sm text-neutral/65">Los resultados se consultan en el servidor.</p>
+      </div>
+      @if (hasFilters()) {
+        <app-button variant="ghost" size="sm" icon="refresh-cw" (clicked)="clearFilters()">
+          Limpiar filtros
+        </app-button>
+      }
+    </div>
+
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <label class="field">
+        <span>Estado</span>
+        <select
+          class="select select-bordered w-full"
+          [value]="filterValue('status')"
+          (change)="onFilterValue('status', $any($event.target).value)"
+        >
+          <option value="">Todos los estados</option>
+          @for (status of orderStatusFilters; track status.value) {
+            <option [value]="status.value">{{ status.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Distrito</span>
+        <input
+          class="input input-bordered w-full"
+          type="search"
+          placeholder="Buscar distrito"
+          [value]="filterValue('district')"
+          (change)="onFilterValue('district', $any($event.target).value)"
+        />
+      </label>
+
+      <label class="field">
+        <span>Fecha de entrega</span>
+        <input
+          class="input input-bordered w-full"
+          type="date"
+          [value]="filterValue('deliveryDate')"
+          (change)="onFilterValue('deliveryDate', $any($event.target).value)"
+        />
+      </label>
     </div>
   </section>
 
   <app-table
-    title="Listado operativo"
-    description="Filtros por columna, sorting, acciones y paginacion configurable."
+    title="Listado de pedidos"
+    description="Filtros, ordenamiento y paginación consultados en backend."
     [columns]="columns"
-    [rows]="rows"
-    [actions]="actions"
-    [pagination]="pagination"
-    [showFilters]="true"
+    [rows]="rows()"
+    [actions]="actions()"
+    [pagination]="pagination()"
+    [sort]="sort()"
+    [filterValues]="filterValues()"
+    [loading]="isLoading()"
+    [serverSide]="true"
+    [showFilters]="false"
     [showActions]="true"
-    [showPagination]="true"
+    [useContextMenuActions]="true"
+    (actionClicked)="onAction($event)"
+    (badgeClicked)="onBadgeClick($event)"
+    (sortChanged)="onSort($event)"
+    (filterChanged)="onFilter($event)"
+    (pageChanged)="onPage($event)"
+    (pageSizeChanged)="onPageSize($event)"
   ></app-table>
 
-  <app-modal [isOpen]="isModalOpen()" (closed)="closeModal()">
-    <div class="space-y-3">
-      <h3 class="text-lg font-semibold text-neutral">Detalle rapido</h3>
-      <p class="text-sm text-neutral/70">
-        Este es un ejemplo de ventana modal reutilizable para confirmar acciones o mostrar
-        informacion clave.
-      </p>
-      <div class="flex flex-wrap justify-end gap-2">
-        <app-button variant="secondary" (clicked)="closeModal()">Cerrar</app-button>
-        <app-button (clicked)="closeModal()">Continuar</app-button>
+  <app-modal [isOpen]="isDetailOpen()" size="lg" (closed)="closeModals()">
+    @if (isLoadingDetail()) {
+      <div class="flex justify-center p-8">
+        <app-loading label="Cargando detalle del pedido..."></app-loading>
+      </div>
+    } @else if (selectedOrder(); as order) {
+      <div class="modal-form-stack">
+        <header>
+          <span class="badge badge-primary badge-outline"
+            >Pedido #{{ order.orderNumber ?? order.id }}</span
+          >
+          <h2 class="mt-2 text-xl font-semibold text-neutral">Detalle del pedido</h2>
+        </header>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <span class="field-label">Destinatario</span>
+            <p>{{ order.recipientName }}</p>
+          </div>
+          <div>
+            <span class="field-label">Teléfono</span>
+            <p>{{ order.recipientPhone }}</p>
+          </div>
+          <div>
+            <span class="field-label">Distrito</span>
+            <p>{{ order.district }}</p>
+          </div>
+          <div>
+            <span class="field-label">Estado</span>
+            <p>{{ statusLabel(order.status) }}</p>
+          </div>
+          <div class="sm:col-span-2">
+            <span class="field-label">Dirección</span>
+            <p>{{ order.address }}</p>
+          </div>
+          <div class="sm:col-span-2">
+            <span class="field-label">Referencia de entrega</span>
+            <p class="whitespace-pre-line">{{ order.deliveryReference || 'Sin referencia registrada' }}</p>
+          </div>
+          <div>
+            <span class="field-label">Producto</span>
+            <p>{{ order.productName ?? 'Producto personalizado' }}</p>
+          </div>
+          <div>
+            <span class="field-label">Horario</span>
+            <p>{{ order.deliveryTime || 'No especificado' }}</p>
+          </div>
+          <div>
+            <span class="field-label">Fecha de entrega</span>
+            <p>{{ order.deliveryDate || 'No especificada' }}</p>
+          </div>
+          <div>
+            <span class="field-label">Remitente</span>
+            <p>{{ order.senderName }} · {{ order.senderPhone }}</p>
+          </div>
+          @if (order.dedication) {
+            <div class="sm:col-span-2">
+              <span class="field-label">Dedicatoria</span>
+              <p>{{ order.dedication }}</p>
+            </div>
+          }
+          @if (customFieldEntries(order).length) {
+            <div class="sm:col-span-2 space-y-3 border-t border-base-200 pt-4">
+              <span class="field-label">Campos adicionales</span>
+              @for (field of customFieldEntries(order); track field[0]) {
+                <div class="rounded-xl border border-base-200 p-3">
+                  <span class="field-label">{{ field[0] }}</span>
+                  <p>{{ field[1] }}</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
+        <div class="flex justify-end">
+          <app-button variant="secondary" (clicked)="closeModals()">Cerrar</app-button>
+        </div>
+      </div>
+    }
+  </app-modal>
+
+  <app-modal [isOpen]="isEditOpen()" size="lg" (closed)="closeModals()">
+    @if (isLoadingDetail()) {
+      <div class="flex justify-center p-8">
+        <app-loading label="Cargando pedido para editar..."></app-loading>
+      </div>
+    } @else {
+      <form appFocusInvalid class="modal-form-stack" [formGroup]="editForm" (ngSubmit)="saveEdit()">
+        <header>
+          <h2 class="text-xl font-semibold text-neutral">Editar pedido</h2>
+          <p class="text-sm text-neutral/70">Actualiza los datos operativos del pedido.</p>
+        </header>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="field"
+            ><span>Destinatario</span
+            ><input class="input input-bordered" formControlName="recipient_name"
+          /></label>
+          <label class="field"
+            ><span>Teléfono</span
+            ><input class="input input-bordered" formControlName="recipient_phone"
+          /></label>
+          <label class="field"
+            ><span>Distrito</span><input class="input input-bordered" formControlName="district"
+          /></label>
+          <label class="field"
+            ><span>Dirección</span><input class="input input-bordered" formControlName="address"
+          /></label>
+          <label class="field sm:col-span-2"
+            ><span>Referencia de entrega</span
+            ><textarea
+              class="textarea textarea-bordered"
+              formControlName="delivery_reference"
+              maxlength="1000"
+            ></textarea>
+          ></label>
+          <label class="field"
+            ><span>Latitud</span
+            ><input class="input input-bordered" type="number" formControlName="latitude"
+          /></label>
+          <label class="field"
+            ><span>Longitud</span
+            ><input class="input input-bordered" type="number" formControlName="longitude"
+          /></label>
+          <label class="field"
+            ><span>Fecha de entrega</span
+            ><input class="input input-bordered" type="date" formControlName="delivery_date"
+          /></label>
+          <label class="field"
+            ><span>Horario de entrega</span
+            ><input class="input input-bordered" formControlName="delivery_time"
+          /></label>
+          <label class="field sm:col-span-2"
+            ><span>Dedicatoria</span
+            ><textarea class="textarea textarea-bordered" formControlName="dedication"></textarea>
+          </label>
+        </div>
+        <div class="flex justify-end gap-2">
+          <app-button
+            type="button"
+            variant="secondary"
+            [disabled]="isSaving()"
+            (clicked)="closeModals()"
+            >Cancelar</app-button
+          >
+          <app-button type="submit" [loading]="isSaving()" [disabled]="isSaving()"
+            >Guardar cambios</app-button
+          >
+        </div>
+      </form>
+    }
+  </app-modal>
+
+  <app-modal [isOpen]="isStatusOpen()" size="sm" (closed)="closeModals()">
+    @if (isLoadingDetail()) {
+      <div class="flex justify-center p-8">
+        <app-loading label="Cargando estados disponibles..."></app-loading>
+      </div>
+    } @else {
+      <form appFocusInvalid class="modal-form-stack" [formGroup]="statusForm" (ngSubmit)="changeStatus()">
+        <header><h2 class="text-xl font-semibold text-neutral">Cambiar estado</h2></header>
+        <label class="field"
+          ><span>Nuevo estado</span>
+          <select class="select select-bordered w-full" formControlName="status">
+            <option [ngValue]="null">Selecciona un estado</option>
+            @for (status of statusOptions(); track status) {
+              <option [ngValue]="status">{{ statusLabel(status) }}</option>
+            }
+          </select>
+        </label>
+        <div class="flex justify-end gap-2">
+          <app-button
+            type="button"
+            variant="secondary"
+            [disabled]="isSaving()"
+            (clicked)="closeModals()"
+            >Cancelar</app-button
+          >
+          <app-button
+            type="submit"
+            [loading]="isSaving()"
+            [disabled]="isSaving() || statusForm.invalid"
+            >Actualizar estado</app-button
+          >
+        </div>
+      </form>
+    }
+  </app-modal>
+
+  <app-modal [isOpen]="isLocationOpen()" size="sm" (closed)="closeModals()">
+    @if (isLoadingDetail()) {
+      <div class="flex justify-center p-8">
+        <app-loading label="Cargando ubicación del pedido..."></app-loading>
+      </div>
+    } @else if (selectedOrder(); as order) {
+      <div class="modal-form-stack">
+        <header>
+          <h2 class="text-xl font-semibold text-neutral">Ubicación de entrega</h2>
+          <p class="text-sm text-neutral/70">{{ order.address }}</p>
+        </header>
+        @if (order.latitude !== undefined && order.longitude !== undefined) {
+          <div class="rounded-2xl border border-base-200 bg-base-200/40 p-4 text-sm">
+            <p><strong>Latitud:</strong> {{ order.latitude }}</p>
+            <p><strong>Longitud:</strong> {{ order.longitude }}</p>
+          </div>
+          <a
+            class="btn btn-primary w-full"
+            target="_blank"
+            rel="noopener noreferrer"
+            [href]="'https://www.google.com/maps?q=' + order.latitude + ',' + order.longitude"
+          >
+            Abrir en Google Maps
+          </a>
+        } @else {
+          <p class="rounded-xl bg-warning/10 p-3 text-sm text-warning">
+            Este pedido no tiene coordenadas de ubicación registradas.
+          </p>
+        }
+        <div class="flex justify-end">
+          <app-button variant="secondary" (clicked)="closeModals()">Cerrar</app-button>
+        </div>
+      </div>
+    }
+  </app-modal>
+
+  <app-modal [isOpen]="isFieldValueOpen()" size="sm" (closed)="closeModals()">
+    @if (selectedBadge(); as badge) {
+      <div class="modal-form-stack">
+        <header>
+          <h2 class="text-xl font-semibold text-neutral">{{ badge.label }}</h2>
+          <p class="text-sm text-neutral/70">Información registrada en el pedido.</p>
+        </header>
+        @if (selectedBadgeFile(); as file) {
+          @if (file.mimeType?.startsWith('image/')) {
+            @if (isLoadingFilePreview()) {
+              <div
+                class="flex justify-center rounded-2xl border border-base-200 bg-base-200/40 p-8"
+              >
+                <app-loading label="Cargando imagen..."></app-loading>
+              </div>
+            } @else if (selectedFilePreviewUrl(); as previewUrl) {
+              <figure class="space-y-2 rounded-2xl border border-base-200 bg-base-200/40 p-3">
+                <img
+                  class="max-h-96 w-full rounded-xl object-contain"
+                  [src]="previewUrl"
+                  [alt]="file.name"
+                />
+                <figcaption class="text-center text-xs text-neutral/60">{{ file.name }}</figcaption>
+              </figure>
+            } @else {
+              <p class="rounded-2xl border border-error/20 bg-error/5 p-4 text-sm text-error">
+                No se pudo cargar la imagen {{ file.name }}.
+              </p>
+            }
+          } @else {
+            <p class="rounded-2xl border border-base-200 bg-base-200/40 p-4 text-sm">
+              Archivo adjunto: {{ file.name }}
+            </p>
+          }
+        } @else {
+          <p
+            class="whitespace-pre-line rounded-2xl border border-base-200 bg-base-200/40 p-4 text-sm"
+          >
+            {{ badge.value }}
+          </p>
+        }
+        <div class="flex justify-end">
+          <app-button variant="secondary" (clicked)="closeModals()">Cerrar</app-button>
+        </div>
+      </div>
+    }
+  </app-modal>
+
+  <app-modal [isOpen]="isDeliveryEvidenceOpen()" size="md" (closed)="closeDeliveryEvidence()">
+    <div class="modal-form-stack">
+      <header>
+        <span class="badge badge-success badge-outline">Entrega confirmada</span>
+        <h2 class="mt-2 text-xl font-semibold text-neutral">Evidencia de entrega</h2>
+        @if (deliveryEvidenceOrder(); as order) {
+          <p class="mt-1 text-sm text-neutral/70">Pedido #{{ order.orderNumber ?? order.id }}</p>
+        }
+      </header>
+
+      @if (isLoadingDeliveryEvidence()) {
+        <div class="flex justify-center rounded-2xl border border-base-200 bg-base-200/40 p-8">
+          <app-loading label="Cargando evidencia de entrega..."></app-loading>
+        </div>
+      } @else if (deliveryEvidencePreviewUrl(); as previewUrl) {
+        <figure class="space-y-3 rounded-2xl border border-base-200 bg-base-200/40 p-3">
+          <img
+            class="max-h-[32rem] w-full rounded-xl object-contain"
+            [src]="previewUrl"
+            alt="Evidencia de entrega"
+          />
+          @if (deliveryEvidenceOrder()?.deliveryEvidence; as evidence) {
+            <figcaption class="text-center text-xs text-neutral/65">
+              Registrada {{ evidence.deliveredAt ?? '' }}
+              @if (evidence.deliveredByCourierName) {
+                por {{ evidence.deliveredByCourierName }}
+              }
+            </figcaption>
+          }
+        </figure>
+      } @else {
+        <p class="rounded-2xl border border-error/20 bg-error/5 p-4 text-sm text-error">
+          No se pudo cargar la evidencia de entrega.
+        </p>
+      }
+
+      <div class="flex justify-end">
+        <app-button variant="secondary" [disabled]="isLoadingDeliveryEvidence()" (clicked)="closeDeliveryEvidence()">
+          Cerrar
+        </app-button>
       </div>
     </div>
   </app-modal>

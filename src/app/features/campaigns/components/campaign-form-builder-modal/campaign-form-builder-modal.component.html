@@ -1,20 +1,31 @@
 <app-modal [isOpen]="isOpen" size="xl" (closed)="close()">
-  <div class="space-y-4">
-    <div class="border-b border-base-200 pb-4 pr-8">
+  <div class="modal-form-stack relative">
+    @if (isLoading()) {
+      <div
+        class="absolute inset-0 z-20 flex min-h-96 items-center justify-center rounded-2xl bg-base-100/80 backdrop-blur-sm"
+        role="status"
+        aria-live="polite"
+        aria-label="Cargando configuración del formulario"
+      >
+        <app-loading label="Cargando configuración del formulario..."></app-loading>
+      </div>
+    }
+    <header class="border-b border-base-200 pb-4 pr-8">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 class="text-lg font-semibold text-neutral">
             {{ currentForm() ? 'Editar formulario' : 'Crear formulario' }}
           </h3>
           <p class="text-sm text-neutral/70">
-            Configura el formulario paso a paso para evitar omitir información importante.
+            Configura el formulario en orden. Los campos obligatorios no pueden eliminarse.
           </p>
         </div>
         <span class="badge" [class.badge-success]="formStatus() === 'published'">
           {{ formStatus() }}
         </span>
       </div>
-      <div class="mt-4 grid grid-cols-4 gap-2">
+
+      <nav class="mt-4 grid grid-cols-5 gap-2" aria-label="Pasos del formulario">
         @for (step of stepLabels; track step; let index = $index) {
           <button
             type="button"
@@ -22,6 +33,7 @@
             [class.border-primary]="activeStep() === index"
             [class.text-primary]="activeStep() === index"
             [class.border-base-200]="activeStep() !== index"
+            [attr.aria-current]="activeStep() === index ? 'step' : null"
             (click)="index <= activeStep() ? activeStep.set(index) : null"
           >
             <span
@@ -35,417 +47,252 @@
             <span class="hidden sm:inline">{{ step }}</span>
           </button>
         }
-      </div>
-    </div>
+      </nav>
+    </header>
 
-    <section
-      class="grid gap-4 rounded-2xl border border-base-200 bg-base-100 p-4 md:grid-cols-2"
-      [class.hidden]="activeStep() !== 0"
-    >
-      <label class="form-control">
-        <span class="label-text mb-1 text-sm font-medium">Título del formulario</span>
-        <input
-          class="input input-bordered"
-          [value]="title()"
-          [disabled]="formStatus() === 'published'"
-          (input)="title.set($any($event.target).value)"
-        />
-      </label>
-      <label class="form-control">
-        <span class="label-text mb-1 text-sm font-medium">Sucursal</span>
-        <select
-          class="select select-bordered"
-          [value]="selectedBranchId() ?? ''"
-          [disabled]="!!currentForm()"
-          (change)="
-            selectedBranchId.set($any($event.target).value ? +$any($event.target).value : null)
-          "
-        >
-          <option value="">Selecciona una sucursal</option>
-          @for (branch of branches(); track branch.id) {
-            <option [value]="branch.id">{{ branch.name }}</option>
-          }
-        </select>
-      </label>
-      <label class="form-control md:col-span-2">
-        <span class="label-text mb-1 text-sm font-medium">Descripción</span>
-        <textarea
-          class="textarea textarea-bordered"
-          [value]="description()"
-          [disabled]="formStatus() === 'published'"
-          (input)="description.set($any($event.target).value)"
-        ></textarea>
-      </label>
-      <label class="form-control">
-        <span class="label-text mb-1 text-sm font-medium">Plantilla</span>
-        <select
-          class="select select-bordered"
-          [value]="selectedTemplateId() ?? ''"
-          [disabled]="!!currentForm()"
-          (change)="
-            selectedTemplateId.set($any($event.target).value ? +$any($event.target).value : null)
-          "
-        >
-          <option value="">Selecciona una plantilla</option>
-          @for (template of templates(); track template.id) {
-            <option [value]="template.id">{{ template.name }}</option>
-          }
-        </select>
-      </label>
-      <div class="flex items-end">
-        <span
-          class="badge"
-          [class.badge-success]="formStatus() === 'published'"
-          [class.badge-warning]="formStatus() === 'draft'"
-        >
-          Estado: {{ formStatus() }}
-        </span>
-      </div>
-    </section>
+    @if (loadError()) {
+      <p class="rounded-xl bg-error/10 px-3 py-2 text-sm text-error" role="alert">
+        {{ loadError() }}
+      </p>
+    }
 
-    <div class="grid gap-6 lg:grid-cols-[3fr_2fr]" [class.hidden]="activeStep() === 0">
-      <div class="space-y-6">
-        <section
-          class="rounded-2xl border border-base-200 bg-base-100 p-4"
-          [class.hidden]="activeStep() !== 1"
-        >
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="text-sm font-semibold text-neutral">Productos</p>
-              <p class="text-xs text-neutral/60">Productos disponibles para la campana.</p>
-            </div>
-            <app-button size="sm" variant="outline" icon="plus" (clicked)="addProduct()">
-              Agregar
-            </app-button>
+    @if (activeStep() === 0) {
+      <section class="rounded-2xl border border-base-200 bg-base-100 p-5">
+        <div class="mb-4">
+          <p class="text-sm font-semibold text-neutral">Información general</p>
+          <p class="text-xs text-neutral/60">Define el nombre y la descripción del formulario.</p>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="form-control">
+            <span class="label-text mb-1 text-sm font-medium">Título del formulario</span>
+            <input
+              class="input input-bordered"
+              [value]="title()"
+              [disabled]="isReadOnly()"
+              (input)="title.set($any($event.target).value)"
+            />
+          </label>
+          <div class="flex items-end">
+            <span
+              class="badge"
+              [class.badge-success]="formStatus() === 'published'"
+              [class.badge-warning]="formStatus() === 'draft'"
+            >
+              Estado: {{ formStatus() }}
+            </span>
           </div>
-          @if (productError()) {
-            <p class="mt-2 text-xs text-error">{{ productError() }}</p>
-          }
-          @if (loadError()) {
-            <p class="mt-2 text-xs text-error">{{ loadError() }}</p>
-          }
-          @if (isLoading()) {
-            <p class="mt-3 text-sm text-neutral/60">Cargando productos...</p>
-          }
-          <div class="mt-3 grid gap-3">
-            @for (product of products(); track product.id; let i = $index) {
-              <div class="grid gap-3 rounded-2xl border border-base-200 p-3 md:grid-cols-4">
-                <div>
-                  <p class="text-sm font-semibold text-neutral">{{ product.name }}</p>
-                  <p class="text-xs text-neutral/60">{{ product.sku }}</p>
-                </div>
-                <label class="form-control w-full">
-                  <span class="label-text mb-1 text-sm font-medium text-neutral"
-                    >Precio campaña</span
-                  >
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="input input-bordered w-full"
-                    [value]="product.price"
-                    (input)="updateProduct(i, 'price', $any($event.target).value)"
-                  />
-                </label>
-                <label class="form-control w-full">
-                  <span class="label-text mb-1 text-sm font-medium text-neutral"
-                    >Cantidad máxima</span
-                  >
-                  <input
-                    type="number"
-                    min="1"
-                    step="1"
-                    class="input input-bordered w-full"
-                    [value]="product.maxQuantity"
-                    (input)="updateProduct(i, 'maxQuantity', $any($event.target).value)"
-                  />
-                </label>
-                <label class="label cursor-pointer justify-start gap-2">
-                  <input
-                    type="checkbox"
-                    class="checkbox checkbox-primary"
-                    [checked]="product.isAvailable"
-                    (change)="setProductAvailability(i, $any($event.target).checked)"
-                  />
-                  <span class="label-text">Disponible</span>
-                </label>
-                <app-button size="sm" variant="ghost" icon="x" (clicked)="removeProduct(i)">
-                  Quitar
-                </app-button>
-              </div>
-            }
-          </div>
-        </section>
+          <label class="form-control md:col-span-2">
+            <span class="label-text mb-1 text-sm font-medium">Descripción</span>
+            <textarea
+              class="textarea textarea-bordered min-h-28"
+              [value]="description()"
+              [disabled]="isReadOnly()"
+              (input)="description.set($any($event.target).value)"
+            ></textarea>
+          </label>
+        </div>
+      </section>
+    }
 
-        <section
-          class="rounded-2xl border border-base-200 bg-base-100 p-4"
-          [class.hidden]="activeStep() !== 2"
-        >
-          <p class="text-sm font-semibold text-neutral">Campos fijos y ubicacion</p>
-          <p class="mt-1 text-xs text-neutral/60">
-            Campos base que estaran disponibles en el formulario.
+    @if (activeStep() === 1) {
+      <section class="rounded-2xl border border-base-200 bg-base-100 p-5">
+        <div class="mb-4">
+          <p class="text-sm font-semibold text-neutral">Campos obligatorios</p>
+          <p class="text-xs text-neutral/60">
+            Estos datos siempre estarán disponibles para registrar un pedido y no se pueden quitar.
           </p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            @for (field of fixedFields; track field) {
-              <span class="badge badge-outline">{{ field }}</span>
-            }
-          </div>
-          <div
-            class="mt-3 flex h-32 items-center justify-center rounded-2xl border border-dashed border-base-300 bg-base-200 text-xs text-neutral/60"
-          >
-            Mapa interactivo (placeholder)
-          </div>
-        </section>
-
-        <section
-          class="rounded-2xl border border-base-200 bg-base-100 p-4"
-          [class.hidden]="activeStep() !== 2"
-        >
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="text-sm font-semibold text-neutral">Horario de entrega</p>
-              <p class="text-xs text-neutral/60">Opciones que el cliente podra seleccionar.</p>
-            </div>
-            <app-button size="sm" variant="outline" icon="plus" (clicked)="addScheduleOption()">
-              Agregar
-            </app-button>
-          </div>
-          @if (scheduleOptionsError()) {
-            <p class="mt-2 text-xs text-error">{{ scheduleOptionsError() }}</p>
-          }
-          <div class="mt-3 grid gap-2">
-            @for (option of deliveryScheduleOptions(); track $index; let i = $index) {
-              <div class="flex items-center gap-2">
-                <app-input
-                  placeholder="Ej: 09:00 - 13:00"
-                  [value]="option"
-                  (valueChanged)="updateScheduleOption(i, $event)"
-                ></app-input>
-                <app-button size="sm" variant="ghost" icon="x" (clicked)="removeScheduleOption(i)">
-                  Quitar
-                </app-button>
-              </div>
-            }
-          </div>
-        </section>
-
-        <section class="rounded-2xl border border-base-200 bg-base-100 p-4">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="text-sm font-semibold text-neutral">Campos variables</p>
-              <p class="text-xs text-neutral/60">Agrega los campos propios de esta campana.</p>
-            </div>
-            <app-button size="sm" variant="outline" icon="plus" (clicked)="addField()">
-              Agregar campo
-            </app-button>
-          </div>
-          @if (fieldLabelError()) {
-            <p class="mt-2 text-xs text-error">{{ fieldLabelError() }}</p>
-          }
-          <div class="mt-3 grid gap-3">
-            @if (!dynamicFields().length) {
-              <p
-                class="rounded-2xl border border-dashed border-base-200 p-4 text-center text-xs text-neutral/60"
+        </div>
+        <div class="grid gap-3 md:grid-cols-2">
+          @for (field of mandatoryFields(); track field.id) {
+            <div
+              class="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4"
+              [class.opacity-60]="draggedFieldId() === field.id"
+              (dragover)="allowFieldDrop($event)"
+              (drop)="dropField(field.id, $event)"
+            >
+              <button
+                type="button"
+                draggable="true"
+                [attr.aria-grabbed]="draggedFieldId() === field.id"
+                class="cursor-grab rounded-lg px-1 text-lg leading-none text-neutral/40 hover:bg-base-100 hover:text-primary active:cursor-grabbing"
+                aria-label="Arrastrar campo para reordenar"
+                title="Arrastrar para reordenar"
+                (dragstart)="startFieldDrag(field.id, $event)"
+                (dragend)="clearFieldDrag()"
               >
-                Aun no hay campos variables.
-              </p>
-            }
-            @for (field of dynamicFields(); track field.id; let i = $index) {
-              <div class="rounded-2xl border border-base-200 p-3">
-                <div class="grid gap-3 md:grid-cols-3">
-                  <app-input
-                    label="Nombre del campo"
-                    placeholder="Ej: Numero de factura"
-                    [value]="field.label"
-                    (valueChanged)="updateField(i, 'label', $event)"
-                  ></app-input>
-                  <label class="form-control w-full">
-                    <span class="label-text mb-1 text-sm font-medium text-neutral">Tipo</span>
-                    <select
-                      class="select select-bordered w-full"
-                      [value]="field.type"
-                      (change)="updateField(i, 'type', $any($event.target).value)"
-                    >
-                      <option value="text">Texto</option>
-                      <option value="number">Numero</option>
-                      <option value="date">Fecha</option>
-                      <option value="select">Seleccion</option>
-                    </select>
-                  </label>
-                  <label class="form-control w-full">
-                    <span class="label-text mb-1 text-sm font-medium text-neutral">Requerido</span>
-                    <select
-                      class="select select-bordered w-full"
-                      [value]="field.required ? 'yes' : 'no'"
-                      (change)="updateField(i, 'required', $any($event.target).value === 'yes')"
-                    >
-                      <option value="no">No</option>
-                      <option value="yes">Si</option>
-                    </select>
-                  </label>
-                  <label class="label cursor-pointer justify-start gap-2">
-                    <input
-                      type="checkbox"
-                      class="checkbox checkbox-primary"
-                      [checked]="field.enabled"
-                      [disabled]="formStatus() === 'published'"
-                      (change)="updateField(i, 'enabled', $any($event.target).checked)"
-                    />
-                    <span class="label-text">Visible</span>
-                  </label>
-                </div>
-                @if (field.type === 'select') {
-                  <div class="mt-3 space-y-2">
-                    <div class="flex items-center justify-between">
-                      <p class="text-xs font-semibold text-neutral/60">Opciones</p>
-                      <app-button size="sm" variant="outline" icon="plus" (clicked)="addOption(i)">
-                        Agregar opcion
+                ::
+              </button>
+              <span
+                class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xs font-semibold text-primary"
+              >
+                Fijo
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-neutral">{{ field.label }}</p>
+                <p class="mt-1 text-xs text-neutral/60">
+                  Este campo es obligatorio para el pedido.
+                </p>
+                @if (field.key === 'delivery_time') {
+                  <div class="mt-3 rounded-xl bg-base-100 p-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p class="text-xs font-semibold text-neutral">Opciones de horario</p>
+                        <p class="text-xs text-neutral/60">
+                          Define los horarios que podrá seleccionar el cliente.
+                        </p>
+                      </div>
+                      <app-button
+                        size="sm"
+                        variant="outline"
+                        icon="plus"
+                        [disabled]="isReadOnly()"
+                        (clicked)="addOption(field.id)"
+                      >
+                        Agregar horario
                       </app-button>
                     </div>
-                    @for (option of field.options ?? []; track $index; let o = $index) {
-                      <div class="flex items-center gap-2">
-                        <app-input
-                          placeholder="Etiqueta de opcion"
-                          [value]="option"
-                          (valueChanged)="updateOption(i, o, $event)"
-                        ></app-input>
-                        <app-button
-                          size="sm"
-                          variant="ghost"
-                          icon="x"
-                          (clicked)="removeOption(i, o)"
-                        >
-                          Quitar
-                        </app-button>
-                      </div>
-                    }
-                  </div>
-                }
-                <div class="mt-3 flex justify-end">
-                  <app-button size="sm" variant="ghost" icon="x" (clicked)="removeField(i)">
-                    Quitar
-                  </app-button>
-                </div>
-              </div>
-            }
-          </div>
-        </section>
-      </div>
-
-      <aside
-        class="rounded-2xl border border-base-200 bg-base-100 p-4 lg:sticky lg:top-6 lg:self-start"
-        [class.hidden]="activeStep() !== 3"
-      >
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <p class="text-sm font-semibold text-neutral">Vista previa</p>
-            <p class="text-xs text-neutral/60">Asi vera el cliente el formulario.</p>
-          </div>
-          <span class="badge badge-outline">Previsualizacion</span>
-        </div>
-        <div class="mt-4 space-y-4">
-          <div class="rounded-2xl border border-base-200 p-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">Detalle</p>
-            <div class="mt-3 grid gap-3 sm:grid-cols-2">
-              @for (product of products(); track product.id) {
-                <button
-                  type="button"
-                  class="group flex items-center gap-3 rounded-2xl border border-base-200 p-3 text-left transition hover:border-primary/50"
-                  [ngClass]="{ 'border-primary shadow-sm': selectedProductId() === product.id }"
-                  (click)="selectProduct(product.id)"
-                >
-                  <div
-                    class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-base-200 text-xs text-neutral/60"
-                  >
-                    @if (product.image) {
-                      <img
-                        [src]="product.image"
-                        alt="Producto"
-                        class="h-full w-full object-cover"
-                      />
-                    } @else {
-                      <span>IMG</span>
-                    }
-                  </div>
-                  <div class="flex-1">
-                    <p class="text-sm font-semibold text-neutral">
-                      {{ product.name || 'Producto sin nombre' }}
-                    </p>
-                    <p class="text-xs text-neutral/60">S/ {{ product.price || '0.00' }}</p>
-                  </div>
-                </button>
-              }
-            </div>
-          </div>
-          <div class="rounded-2xl border border-base-200 p-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">Entrega</p>
-            <div class="mt-3 grid gap-3 md:grid-cols-2">
-              <app-input label="Remitente" placeholder="Nombre completo"></app-input>
-              <app-input label="Telef. Remitente" placeholder="999 999 999"></app-input>
-              <app-input label="Destinatario" placeholder="Nombre completo"></app-input>
-              <app-input label="Telef. Destinatario" placeholder="999 999 999"></app-input>
-              <app-input label="Direccion" placeholder="Av. Principal 123"></app-input>
-              <select class="select select-bordered w-full" disabled>
-                <option>Distrito desde la base de datos</option>
-              </select>
-              <select class="select select-bordered w-full md:col-span-2">
-                @for (option of deliveryScheduleOptions(); track $index) {
-                  <option [value]="option">{{ option || 'Opcion sin nombre' }}</option>
-                }
-              </select>
-            </div>
-          </div>
-          @if (dynamicFields().length) {
-            <div class="rounded-2xl border border-base-200 p-4">
-              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-neutral/50">
-                Campos variables
-              </p>
-              <div class="mt-3 grid gap-3 md:grid-cols-2">
-                @for (field of dynamicFields(); track field.id) {
-                  <div class="rounded-2xl border border-base-200 p-3">
-                    <p class="text-xs font-semibold text-neutral/60">
-                      {{ field.label || 'Nuevo campo' }}
-                    </p>
-                    <p class="mt-2 text-xs text-neutral/50">
-                      Tipo: {{ field.type }} · {{ field.required ? 'Requerido' : 'Opcional' }}
-                    </p>
-                    @if (field.type === 'select') {
-                      <p class="mt-2 text-xs text-neutral/50">
-                        Opciones: {{ formatOptions(field.options) }}
-                      </p>
-                    }
+                    <div class="mt-2 space-y-2">
+                      @for (option of field.options ?? []; track $index; let optionIndex = $index) {
+                        <div class="flex items-center gap-2">
+                          <input
+                            class="input input-bordered input-sm w-full"
+                            placeholder="Ej: 09:00 - 12:00"
+                            [disabled]="isReadOnly()"
+                            [value]="option"
+                            (input)="updateOption(field.id, optionIndex, $any($event.target).value)"
+                          />
+                          <app-button
+                            size="sm"
+                            variant="ghost"
+                            icon="x"
+                            [disabled]="isReadOnly()"
+                            (clicked)="removeOption(field.id, optionIndex)"
+                          >
+                            Quitar
+                          </app-button>
+                        </div>
+                      } @empty {
+                        <p class="text-xs text-neutral/60">Aún no hay horarios configurados.</p>
+                      }
+                    </div>
                   </div>
                 }
               </div>
+              <span class="badge badge-outline">
+                {{ field.required ? 'Obligatorio' : 'Opcional' }}
+              </span>
             </div>
+          } @empty {
+            <p
+              class="md:col-span-2 rounded-2xl border border-dashed border-warning/40 bg-warning/5 p-4 text-sm text-warning"
+            >
+              No se encontraron campos obligatorios en la plantilla activa.
+            </p>
           }
         </div>
-      </aside>
-    </div>
+      </section>
+    }
+
+    @if (activeStep() === 2) {
+      <app-campaign-products-section
+        [products]="products()"
+        [selectableProducts]="selectableProducts()"
+        [selectedProductIds]="selectedAvailableProductIds()"
+        [productPickerOpen]="productPickerOpen()"
+        [readOnly]="isReadOnly()"
+        [productError]="productError()"
+        [productCreateError]="productCreateError()"
+        (productPickerRequested)="openProductPicker()"
+        (productCreationRequested)="openProductCreation()"
+        (productPickerClosed)="closeProductPicker()"
+        (allProductsSelected)="selectAllAvailableProducts()"
+        (productSelectionChanged)="toggleAvailableProduct($event.productId, $event.checked)"
+        (selectedProductsAdded)="addSelectedProducts()"
+        (productUpdated)="updateProduct($event.index, $event.key, $event.value)"
+        (productAvailabilityChanged)="setProductAvailability($event.index, $event.isAvailable)"
+        (productRemoved)="removeProduct($event)"
+      ></app-campaign-products-section>
+    }
+
+    @if (activeStep() === 3) {
+      <app-campaign-additional-fields-section
+        [visibleGroup]="'optional_base'"
+        [fields]="additionalFields()"
+        [availableFields]="availableAdditionalFields()"
+        [selectedTemplate]="!!selectedTemplateId()"
+        [readOnly]="isReadOnly()"
+        [draggedFieldId]="draggedFieldId()"
+        [fieldLabelError]="fieldLabelError()"
+        (customFieldRequested)="openCustomFieldForm()"
+        (fieldAdded)="addAdditionalField($event)"
+        (fieldUpdated)="updateField($event.fieldId, $event.key, $event.value)"
+        (optionAdded)="addOption($event)"
+        (optionUpdated)="updateOption($event.fieldId, $event.optionIndex, $event.value ?? '')"
+        (optionRemoved)="removeOption($event.fieldId, $event.optionIndex)"
+        (fieldRemoved)="removeField($event)"
+        (fieldDragStarted)="startFieldDrag($event.fieldId, $event.event)"
+        (fieldDragOver)="allowFieldDrop($event)"
+        (fieldDropped)="dropField($event.fieldId, $event.event)"
+        (fieldDragEnded)="clearFieldDrag()"
+      ></app-campaign-additional-fields-section>
+    }
+
+    @if (activeStep() === 4) {
+      <app-campaign-additional-fields-section
+        [visibleGroup]="'custom'"
+        [fields]="additionalFields()"
+        [availableFields]="availableAdditionalFields()"
+        [selectedTemplate]="!!selectedTemplateId()"
+        [readOnly]="isReadOnly()"
+        [draggedFieldId]="draggedFieldId()"
+        [fieldLabelError]="fieldLabelError()"
+        (customFieldRequested)="openCustomFieldForm()"
+        (fieldAdded)="addAdditionalField($event)"
+        (fieldUpdated)="updateField($event.fieldId, $event.key, $event.value)"
+        (optionAdded)="addOption($event)"
+        (optionUpdated)="updateOption($event.fieldId, $event.optionIndex, $event.value ?? '')"
+        (optionRemoved)="removeOption($event.fieldId, $event.optionIndex)"
+        (fieldRemoved)="removeField($event)"
+        (fieldDragStarted)="startFieldDrag($event.fieldId, $event.event)"
+        (fieldDragOver)="allowFieldDrop($event)"
+        (fieldDropped)="dropField($event.fieldId, $event.event)"
+        (fieldDragEnded)="clearFieldDrag()"
+      ></app-campaign-additional-fields-section>
+    }
+
+    @if (activeStep() === 5) {
+      <app-campaign-form-preview
+        [title]="title()"
+        [description]="description()"
+        [products]="previewProducts()"
+        [mandatoryFields]="previewMandatoryFields()"
+        [additionalFields]="previewAdditionalFields()"
+      ></app-campaign-form-preview>
+    }
 
     <div class="flex flex-wrap justify-end gap-2 border-t border-base-200 pt-4">
-      <app-button variant="secondary" (clicked)="close()">Cancelar</app-button>
+      <app-button variant="secondary" [disabled]="isSaving() || isLoading()" (clicked)="close()">
+        Cancelar
+      </app-button>
       @if (activeStep() > 0) {
-        <app-button variant="ghost" [disabled]="isSaving()" (clicked)="previousStep()">
+        <app-button
+          variant="ghost"
+          [disabled]="isSaving() || isLoading()"
+          (clicked)="previousStep()"
+        >
           Anterior
         </app-button>
       }
-      @if (activeStep() < 3) {
-        <app-button [disabled]="isSaving() || isLoading()" (clicked)="nextStep()">
+      @if (activeStep() < stepLabels.length - 1) {
+        <app-button
+          [loading]="isLoading()"
+          [disabled]="isSaving() || isLoading()"
+          (clicked)="nextStep()"
+        >
           Siguiente
         </app-button>
       }
-      @if (activeStep() === 3 && currentForm() && formStatus() === 'published') {
-        <app-button
-          variant="outline"
-          [loading]="isSaving()"
-          [disabled]="isSaving()"
-          (clicked)="closeForm()"
-        >
-          Cerrar formulario
-        </app-button>
-      }
-      @if (activeStep() === 3 && currentForm() && formStatus() === 'draft') {
+      @if (activeStep() === stepLabels.length - 1 && currentForm() && formStatus() === 'draft') {
         <app-button
           variant="outline"
           [loading]="isSaving()"
@@ -455,7 +302,7 @@
           Publicar
         </app-button>
       }
-      @if (activeStep() === 3) {
+      @if (activeStep() === stepLabels.length - 1) {
         <app-button
           [loading]="isSaving()"
           [disabled]="isSaving() || isLoading() || formStatus() !== 'draft'"
@@ -467,3 +314,27 @@
     </div>
   </div>
 </app-modal>
+
+<app-custom-form-field-modal
+  [isOpen]="customFieldOpen()"
+  [isSaving]="customFieldSaving()"
+  [error]="customFieldError()"
+  (closed)="closeCustomFieldForm()"
+  (submitted)="createCustomField($event)"
+></app-custom-form-field-modal>
+
+<app-publish-campaign-confirmation-modal
+  [isOpen]="publishConfirmationOpen()"
+  [isSaving]="isSaving()"
+  [error]="loadError()"
+  (closed)="closePublishConfirmation()"
+  (confirmed)="requestOpenCampaignAndPublish()"
+></app-publish-campaign-confirmation-modal>
+
+<app-product-form-modal
+  [isOpen]="productModalOpen()"
+  [categories]="productCategories()"
+  [isSaving]="isCreatingProduct()"
+  (closed)="closeProductCreation()"
+  (submitted)="createProduct($event)"
+></app-product-form-modal>

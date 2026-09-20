@@ -15,7 +15,7 @@ describe('AuthStore', () => {
       roles: [
         {
           id: 1,
-          name: 'Gestor de campañas',
+          name: 'Administrador operativo',
           slug: 'campaign_manager',
           is_active: true,
           permissions: [

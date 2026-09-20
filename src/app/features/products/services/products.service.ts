@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { BranchContextStore } from '@features/branches/store/branch-context.store';
 import { Product, ProductCategory, ProductPage } from '../models/product.model';
 import {
   ProductCategoriesResponse,
@@ -27,12 +28,15 @@ export interface ProductQuery {
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
   private readonly http = inject(HttpClient);
+  private readonly branchContext = inject(BranchContextStore);
   private readonly baseUrl = environment.apiUrl;
 
   list(query: ProductQuery = {}): Observable<ProductPage> {
     let params = new HttpParams()
       .set('page', query.page ?? 1)
       .set('per_page', query.pageSize ?? 10);
+    const branchId = this.branchContext.activeBranchId();
+    if (branchId) params = params.set('branch_id', branchId);
     if (query.search?.trim()) params = params.set('search', query.search.trim());
     if (query.categoryId) params = params.set('category_id', query.categoryId);
     if (query.subcategoryId) params = params.set('subcategory_id', query.subcategoryId);
@@ -107,8 +111,14 @@ export class ProductsService {
   }
 
   create(payload: ProductPayload): Observable<Product> {
+    const branchId = this.branchContext.activeBranchId();
     return this.http
-      .post<{ datos: ProductDto }>(`${this.baseUrl}/products`, toFormData(payload))
+      .post<{
+        datos: ProductDto;
+      }>(
+        `${this.baseUrl}/products`,
+        toFormData({ ...payload, branch_id: payload.branch_id ?? branchId ?? undefined }),
+      )
       .pipe(map((response) => mapProduct(response.datos)));
   }
 

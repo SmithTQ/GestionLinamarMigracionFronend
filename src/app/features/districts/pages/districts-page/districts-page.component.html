@@ -108,7 +108,8 @@
     [departments]="departments()"
     [provinces]="provinces()"
     [defaultDepartmentCode]="defaultDepartmentCode()"
-    [isSaving]="isSaving() || optionsLoading() || isLoadingDetail()"
+    [isSaving]="isSaving() || optionsLoading()"
+    [isLoadingData]="isLoadingDetail()"
     [isLoadingDistricts]="optionsLoading()"
     (departmentChanged)="onDistrictDepartmentChanged($event)"
     (provinceChanged)="onDistrictProvinceChanged($event)"
@@ -117,7 +118,7 @@
   ></app-district-list-form-modal>
 
   <app-modal [isOpen]="deleteModalOpen()" size="sm" (closed)="closeDeleteModal()">
-    <div class="space-y-4">
+    <div class="modal-form-stack">
       <div>
         <h2 class="text-lg font-semibold text-neutral">Desactivar registro</h2>
         <p class="mt-1 text-sm text-neutral/70">

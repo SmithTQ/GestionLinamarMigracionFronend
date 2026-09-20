@@ -100,7 +100,7 @@
     (submitted)="save($event)"
   ></app-product-form-modal>
   <app-modal [isOpen]="imageModalOpen()" size="md" (closed)="closeImage()">
-    <div class="space-y-4">
+    <div class="modal-form-stack">
       <h2 class="text-lg font-semibold text-neutral">{{ selectedImageName() }}</h2>
       @if (selectedImageUrl()) {
         <img
@@ -115,7 +115,7 @@
     </div>
   </app-modal>
   <app-modal [isOpen]="deleteModalOpen()" size="sm" (closed)="closeDeleteModal()"
-    ><div class="space-y-4">
+    ><div class="modal-form-stack">
       <h2 class="text-lg font-semibold text-neutral">Desactivar producto</h2>
       <p class="text-sm text-neutral/70">
         Se desactivará <strong>{{ productToDelete()?.name }}</strong> del catálogo.

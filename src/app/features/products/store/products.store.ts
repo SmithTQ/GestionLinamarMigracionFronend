@@ -7,10 +7,12 @@ import {
   ProductSubcategoryPayload,
 } from '../services/product.dto';
 import { ProductQuery, ProductsService } from '../services/products.service';
+import { SessionDataStateService } from '@core/services/session-data-state.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsStore {
   private readonly service = inject(ProductsService);
+  private readonly sessionDataState = inject(SessionDataStateService);
   private readonly itemsState = signal<Product[]>([]);
   private readonly pageState = signal<ProductPage>({
     items: [],
@@ -29,6 +31,10 @@ export class ProductsStore {
   readonly isLoading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly hasItems = computed(() => this.items().length > 0);
+
+  constructor() {
+    this.sessionDataState.register(() => this.reset());
+  }
 
   load(query: ProductQuery): void {
     const requestId = ++this.loadRequestId;
@@ -152,4 +158,17 @@ export class ProductsStore {
       }),
     );
   }
+
+  reset(): void {
+    this.loadRequestId += 1;
+    this.itemsState.set([]);
+    this.pageState.set(createEmptyPage());
+    this.categoriesState.set([]);
+    this.loadingState.set(false);
+    this.errorState.set(null);
+  }
+}
+
+function createEmptyPage(): ProductPage {
+  return { items: [], page: 1, pageSize: 10, total: 0, totalPages: 1 };
 }

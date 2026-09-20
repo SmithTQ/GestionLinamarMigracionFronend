@@ -21,7 +21,7 @@ import {
 } from '@shared/components/context-menu/context-menu.component';
 
 export type TableColumnAlign = 'left' | 'center' | 'right';
-export type TableColumnType = 'text' | 'badge' | 'date' | 'currency' | 'image';
+export type TableColumnType = 'text' | 'badge' | 'badges' | 'date' | 'currency' | 'image';
 export type TableSize = 'xs' | 'sm' | 'md' | 'lg';
 
 export interface TableColumn {
@@ -41,6 +41,13 @@ export interface TableAction {
   icon?: string;
   iconPosition?: 'left' | 'right';
   disabled?: boolean;
+  hidden?: (row: Record<string, unknown>) => boolean;
+}
+
+export interface TableBadge {
+  id?: string;
+  label: string;
+  value: string;
 }
 
 export interface TablePagination {
@@ -100,6 +107,10 @@ export class TableComponent implements OnChanges, OnDestroy {
     row: Record<string, unknown>;
     url: string;
   }>();
+  @Output() badgeClicked = new EventEmitter<{
+    row: Record<string, unknown>;
+    badge: TableBadge;
+  }>();
 
   contextMenuOpen = false;
   contextMenuPosition = { x: 0, y: 0 };
@@ -118,8 +129,13 @@ export class TableComponent implements OnChanges, OnDestroy {
     );
   }
 
-  get contextMenuOptions(): ContextMenuOption[] {
-    return this.actions.map(({ id, label, icon, disabled }) => ({ id, label, icon, disabled }));
+  contextMenuOptions(): ContextMenuOption[] {
+    return this.visibleActions(this.contextMenuRow).map(({ id, label, icon, disabled }) => ({
+      id,
+      label,
+      icon,
+      disabled,
+    }));
   }
 
   get activeSort(): { key: string; direction: 'asc' | 'desc' } | undefined {
@@ -195,19 +211,20 @@ export class TableComponent implements OnChanges, OnDestroy {
   }
 
   onAction(action: TableAction, row: Record<string, unknown>): void {
-    if (action.disabled) {
+    if (action.disabled || action.hidden?.(row)) {
       return;
     }
     this.actionClicked.emit({ action, row });
   }
 
   onRowContextMenu(event: MouseEvent, row: Record<string, unknown>): void {
-    if (!this.useContextMenuActions || !this.showActions || !this.actions.length) {
+    const actions = this.visibleActions(row);
+    if (!this.useContextMenuActions || !this.showActions || !actions.length) {
       return;
     }
     event.preventDefault();
     const menuWidth = 220;
-    const menuHeight = Math.max(44, this.actions.length * 36 + 16);
+    const menuHeight = Math.max(44, actions.length * 36 + 16);
     const viewport = this.document.defaultView;
     const maxX = Math.max(8, (viewport?.innerWidth ?? 1024) - menuWidth - 8);
     const maxY = Math.max(8, (viewport?.innerHeight ?? 768) - menuHeight - 8);
@@ -226,7 +243,9 @@ export class TableComponent implements OnChanges, OnDestroy {
   }
 
   onContextMenuAction(action: ContextMenuOption): void {
-    const selectedAction = this.actions.find((item) => item.id === action.id);
+    const selectedAction = this.visibleActions(this.contextMenuRow).find(
+      (item) => item.id === action.id,
+    );
     if (!this.contextMenuRow || !selectedAction) {
       return;
     }
@@ -282,6 +301,24 @@ export class TableComponent implements OnChanges, OnDestroy {
     }
   }
 
+  onBadgeClick(row: Record<string, unknown>, badge: TableBadge): void {
+    this.badgeClicked.emit({ row, badge });
+  }
+
+  rowBadges(row: Record<string, unknown>, column: TableColumn): TableBadge[] {
+    const value = row[column.key];
+    return Array.isArray(value) ? (value as TableBadge[]) : [];
+  }
+
+  badgeClass(row: Record<string, unknown>, column: TableColumn): string {
+    return `badge-${resolveBadgeVariant(this.formatCell(row, column))}`;
+  }
+
+  visibleActions(row: Record<string, unknown> | null): TableAction[] {
+    if (!row) return [];
+    return this.actions.filter((action) => !action.hidden?.(row));
+  }
+
   formatCell(row: Record<string, unknown>, column: TableColumn): string {
     const value = row[column.key];
     if (value === null || value === undefined) {
@@ -321,4 +358,42 @@ export class TableComponent implements OnChanges, OnDestroy {
           });
     return sort.direction === 'asc' ? comparison : -comparison;
   }
+}
+
+function resolveBadgeVariant(value: string): 'success' | 'warning' | 'info' | 'error' | 'neutral' {
+  const status = value
+    .trim()
+    .toLocaleLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '');
+
+  if (
+    [
+      'abierta',
+      'activo',
+      'activa',
+      'publicado',
+      'publicada',
+      'entregado',
+      'entregada',
+      'completado',
+      'completada',
+    ].includes(status)
+  ) {
+    return 'success';
+  }
+
+  if (['borrador', 'pendiente', 'pendiente de ruta', 'en espera'].includes(status)) {
+    return 'warning';
+  }
+
+  if (['asignado', 'asignada', 'en ruta', 'en proceso'].includes(status)) {
+    return 'info';
+  }
+
+  if (['cancelado', 'cancelada', 'inactivo', 'inactiva', 'rechazado', 'rechazada'].includes(status)) {
+    return 'error';
+  }
+
+  return 'neutral';
 }

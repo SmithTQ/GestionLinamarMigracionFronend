@@ -1,0 +1,85 @@
+<app-modal [isOpen]="isOpen" size="md" (closed)="closed.emit()">
+  <div class="modal-form-stack modal-form-content">
+    <div>
+      <span class="badge badge-primary badge-outline">
+        {{ isReissuing ? 'Reenvio de acceso' : 'Asignacion de ruta' }}
+      </span>
+      <h3 class="mt-2 text-lg font-semibold text-neutral">
+        {{ isReissuing ? 'Reenviar acceso al motorizado' : 'Invitar motorizado' }}
+      </h3>
+      <p class="mt-1 text-sm text-neutral/60">
+        @if (isReissuing) {
+          Genera un nuevo enlace seguro para esta ruta. El enlace anterior dejara de ser valido.
+        } @else {
+          Registra el contacto del motorizado y comparte el detalle seguro de la ruta.
+        }
+      </p>
+      <p class="mt-2 rounded-lg bg-base-200 px-3 py-2 text-sm font-medium text-neutral">
+        {{ routeName }}
+      </p>
+    </div>
+
+    @if (invitation; as created) {
+      <section class="modal-form-section rounded-xl bg-success/10 p-4">
+        <p class="text-sm font-semibold text-success">Invitacion generada correctamente.</p>
+        <p class="mt-1 text-sm text-neutral/70">
+          {{ created.courier.name }} recibira el detalle de la ruta mediante este enlace seguro.
+        </p>
+        <label class="form-control mt-4">
+          <span class="label-text mb-1 text-xs font-medium">Enlace de la ruta</span>
+          <input class="input input-bordered input-sm" readonly [value]="created.publicUrl" />
+        </label>
+        @if (created.expiresAt) {
+          <p class="mt-2 text-xs text-neutral/60">Vence: {{ created.expiresAt }}</p>
+        }
+        <div class="modal-form-actions border-0 p-0 pt-4">
+          <a
+            class="btn btn-outline btn-sm"
+            [href]="created.publicUrl"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Abrir detalle
+          </a>
+          <a
+            class="btn btn-success btn-sm"
+            [href]="created.whatsappUrl"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Compartir por WhatsApp
+          </a>
+        </div>
+      </section>
+    } @else {
+      <app-input
+        label="Nombre del motorizado"
+        placeholder="Ej: Juan Perez"
+        [value]="name()"
+        [disabled]="saving"
+        (valueChanged)="name.set($event)"
+      ></app-input>
+      <app-input
+        label="Numero de WhatsApp"
+        placeholder="Ej: 51999999999"
+        [value]="whatsappNumber()"
+        [disabled]="saving"
+        (valueChanged)="whatsappNumber.set($event)"
+      ></app-input>
+      <p class="rounded-lg bg-base-200 p-3 text-xs text-neutral/65">
+        Si el numero ya pertenece a un motorizado, se reutilizara su registro y se actualizara la asignacion.
+      </p>
+      @if (error) {
+        <p class="text-sm text-error" role="alert">{{ error }}</p>
+      }
+      <div class="modal-form-actions">
+        <app-button variant="secondary" [disabled]="saving" (clicked)="closed.emit()">
+          Cancelar
+        </app-button>
+        <app-button [loading]="saving" [disabled]="saving" (clicked)="submit()">
+          {{ saving ? 'Generando...' : isReissuing ? 'Generar nuevo enlace' : 'Asignar y generar enlace' }}
+        </app-button>
+      </div>
+    }
+  </div>
+</app-modal>

@@ -41,6 +41,43 @@ describe('CampaignsService', () => {
     expect(request.request.params.get('starts_on_to')).toBe('2026-10-01');
     request.flush({ datos: [], paginacion: emptyPagination(), codigo: 200, mensaje: 'OK' });
   });
+
+  it('maps form status and ISO dates for campaign rows', () => {
+    let result: unknown;
+    service.list().subscribe((page) => (result = page.items[0]));
+
+    const request = httpTesting.expectOne(
+      (pendingRequest) => pendingRequest.url === `${environment.apiUrl}/campaigns`,
+    );
+    request.flush({
+      datos: [
+        {
+          id: 12,
+          code: 'CAMP-12',
+          name: 'Campana',
+          status: 'open',
+          form_status: 'published',
+          has_published_form: true,
+          starts_on: '14/09/2026',
+          starts_on_iso: '2026-09-14',
+          ends_on: '20/09/2026',
+          ends_on_iso: '2026-09-20',
+        },
+      ],
+      paginacion: emptyPagination(),
+      codigo: 200,
+      mensaje: 'OK',
+    });
+
+    expect(result).toEqual(
+      jasmine.objectContaining({
+        formStatus: 'published',
+        hasPublishedForm: true,
+        startsOn: '2026-09-14',
+        endsOn: '2026-09-20',
+      }),
+    );
+  });
 });
 
 function emptyPagination() {

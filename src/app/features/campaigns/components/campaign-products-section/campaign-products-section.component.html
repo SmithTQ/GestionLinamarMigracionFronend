@@ -1,0 +1,196 @@
+<section class="rounded-2xl border border-base-200 bg-base-100 p-5">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <p class="text-sm font-semibold text-neutral">Productos del formulario</p>
+      <p class="text-xs text-neutral/60">
+        Selecciona todos los productos que el cliente podrá solicitar.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <app-button size="sm" variant="outline" icon="plus" (clicked)="productPickerRequested.emit()">
+        Agregar productos
+      </app-button>
+      <app-button
+        size="sm"
+        variant="ghost"
+        icon="plus"
+        [disabled]="readOnly"
+        (clicked)="productCreationRequested.emit()"
+      >
+        Nuevo producto
+      </app-button>
+    </div>
+  </div>
+
+  @if (productError) {
+    <p class="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm text-error" role="alert">
+      {{ productError }}
+    </p>
+  }
+  @if (productCreateError) {
+    <p class="mt-3 rounded-xl bg-error/10 px-3 py-2 text-sm text-error" role="alert">
+      {{ productCreateError }}
+    </p>
+  }
+
+  @if (productPickerOpen) {
+    <div class="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p class="text-sm font-semibold text-neutral">Catálogo disponible</p>
+          <p class="text-xs text-neutral/60">Marca los productos que deseas agregar.</p>
+        </div>
+        <button
+          type="button"
+          class="text-xs font-semibold text-primary hover:underline"
+          [disabled]="readOnly"
+          (click)="allProductsSelected.emit()"
+        >
+          Seleccionar todos
+        </button>
+      </div>
+      <div class="mt-3 grid max-h-64 gap-2 overflow-y-auto pr-1 md:grid-cols-2">
+        @for (product of selectableProducts; track product.id) {
+          <label
+            class="flex cursor-pointer items-center gap-3 rounded-xl border border-base-200 bg-base-100 p-3 hover:border-primary/40"
+          >
+            <input
+              type="checkbox"
+              class="checkbox checkbox-primary"
+              [disabled]="readOnly"
+              [checked]="selectedProductIds.includes(product.id)"
+              (change)="
+                productSelectionChanged.emit({
+                  productId: product.id,
+                  checked: $any($event.target).checked,
+                })
+              "
+            />
+            <span
+              class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-base-200 text-[10px] text-neutral/50"
+            >
+              @if (product.image_thumbnail_url ?? product.image_url) {
+                <img
+                  [src]="product.image_thumbnail_url ?? product.image_url"
+                  [alt]="product.name"
+                  class="h-full w-full object-cover"
+                />
+              } @else {
+                IMG
+              }
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm font-medium text-neutral">{{
+                product.name
+              }}</span>
+              <span class="block text-xs text-neutral/60">{{ product.sku }}</span>
+            </span>
+            <span class="text-xs text-neutral/60">S/ {{ product.base_price ?? '0.00' }}</span>
+          </label>
+        } @empty {
+          <p
+            class="md:col-span-2 rounded-xl border border-dashed border-base-300 p-4 text-center text-xs text-neutral/60"
+          >
+            No hay productos nuevos disponibles para agregar.
+          </p>
+        }
+      </div>
+      <div class="mt-3 flex justify-end gap-2">
+        <app-button size="sm" variant="ghost" (clicked)="productPickerClosed.emit()"
+          >Cancelar</app-button
+        >
+        <app-button size="sm" [disabled]="readOnly" (clicked)="selectedProductsAdded.emit()"
+          >Agregar seleccionados</app-button
+        >
+      </div>
+    </div>
+  }
+
+  <div class="mt-4 grid gap-3">
+    @for (product of products; track product.id; let i = $index) {
+      <div
+        class="grid gap-3 rounded-2xl border border-base-200 p-4 md:grid-cols-[1.5fr_1fr_1fr_auto] md:items-end"
+      >
+        <div class="flex min-w-0 items-center gap-3">
+          <span
+            class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-base-200 text-[10px] text-neutral/50"
+          >
+            @if (product.image) {
+              <img [src]="product.image" [alt]="product.name" class="h-full w-full object-cover" />
+            } @else {
+              IMG
+            }
+          </span>
+          <div class="min-w-0">
+            <p class="truncate text-sm font-semibold text-neutral">{{ product.name }}</p>
+            <p class="text-xs text-neutral/60">{{ product.sku }}</p>
+          </div>
+        </div>
+        <label class="form-control">
+          <span class="label-text mb-1 text-xs font-medium">Precio campaña</span>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            class="input input-bordered input-sm"
+            [disabled]="readOnly"
+            [value]="product.price"
+            (input)="
+              productUpdated.emit({ index: i, key: 'price', value: $any($event.target).value })
+            "
+          />
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1 text-xs font-medium">Cantidad máxima</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            class="input input-bordered input-sm"
+            [disabled]="readOnly"
+            [value]="product.maxQuantity"
+            (input)="
+              productUpdated.emit({
+                index: i,
+                key: 'maxQuantity',
+                value: $any($event.target).value,
+              })
+            "
+          />
+        </label>
+        <div class="flex items-center justify-between gap-2">
+          <label class="label cursor-pointer gap-2 p-0">
+            <input
+              type="checkbox"
+              class="checkbox checkbox-primary checkbox-sm"
+              [disabled]="readOnly"
+              [checked]="product.isAvailable"
+              (change)="
+                productAvailabilityChanged.emit({
+                  index: i,
+                  isAvailable: $any($event.target).checked,
+                })
+              "
+            />
+            <span class="label-text text-xs">Disponible</span>
+          </label>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm text-error"
+            [disabled]="readOnly"
+            (click)="productRemoved.emit(i)"
+          >
+            Quitar
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="rounded-2xl border border-dashed border-base-300 p-8 text-center">
+        <p class="text-sm font-medium text-neutral">Aún no hay productos seleccionados</p>
+        <p class="mt-1 text-xs text-neutral/60">
+          Usa “Agregar productos” para elegirlos del catálogo.
+        </p>
+      </div>
+    }
+  </div>
+</section>

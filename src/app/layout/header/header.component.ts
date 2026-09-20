@@ -7,6 +7,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { AuthStore } from '@features/auth/store/auth.store';
 import { AuthService } from '@features/auth/services/auth.service';
 import { Router } from '@angular/router';
+import { CampaignContextStore } from '@features/campaigns/store/campaign-context.store';
+import { BranchContextStore } from '@features/branches/store/branch-context.store';
 
 @Component({
   selector: 'app-header',
@@ -24,6 +26,8 @@ export class HeaderComponent {
   private readonly authStore = inject(AuthStore);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly campaignContext = inject(CampaignContextStore);
+  private readonly branchContext = inject(BranchContextStore);
 
   readonly isDark = signal(false);
   readonly isLoggingOut = signal(false);
@@ -32,6 +36,36 @@ export class HeaderComponent {
   readonly userRole = computed(() => {
     return this.user()?.roles[0]?.name ?? 'Usuario';
   });
+  readonly availableCampaigns = this.campaignContext.availableCampaigns;
+  readonly activeCampaign = this.campaignContext.activeCampaign;
+  readonly activeCampaignId = this.campaignContext.activeCampaignId;
+  readonly campaignSwitcherOpen = signal(false);
+  readonly branches = this.branchContext.branches;
+  readonly activeBranch = this.branchContext.activeBranch;
+  readonly requiresBranchSelection = this.branchContext.requiresBranchSelection;
+
+  selectCampaign(value: string): void {
+    const campaignId = Number(value);
+    if (Number.isInteger(campaignId)) {
+      this.campaignContext.selectCampaign(campaignId);
+      this.campaignSwitcherOpen.set(false);
+    }
+  }
+
+  toggleCampaignSwitcher(): void {
+    this.campaignSwitcherOpen.update((isOpen) => !isOpen);
+  }
+
+  closeCampaignSwitcher(): void {
+    this.campaignSwitcherOpen.set(false);
+  }
+
+  selectBranch(branchId: number): void {
+    if (!this.branchContext.selectBranch(branchId)) return;
+
+    this.campaignContext.reset();
+    void this.router.navigate(['/campaign-selection']);
+  }
 
   constructor() {
     const saved = this.document.defaultView?.localStorage.getItem(this.storageKey);

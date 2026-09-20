@@ -10,6 +10,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { ProductCategory } from '../../models/product.model';
+import { FocusInvalidDirective } from '@shared/directives/focus-invalid.directive';
 
 export type ProductTaxonomyKind = 'category' | 'subcategory';
 
@@ -25,7 +26,7 @@ export interface ProductTaxonomyValue {
 @Component({
   selector: 'app-product-taxonomy-form-modal',
   standalone: true,
-  imports: [ReactiveFormsModule, ButtonComponent, ModalComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, ModalComponent, FocusInvalidDirective],
   templateUrl: './product-taxonomy-form-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

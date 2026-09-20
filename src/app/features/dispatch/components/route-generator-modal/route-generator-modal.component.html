@@ -1,0 +1,101 @@
+<app-modal [isOpen]="isOpen" size="lg" (closed)="closed.emit()"
+  ><form class="modal-form-stack" [formGroup]="form" (ngSubmit)="submit()">
+    <div>
+      <span class="badge badge-primary badge-outline">Ruta seleccionada</span>
+      <h3 class="mt-2 text-xl font-semibold text-neutral">Generar ruta de entrega</h3>
+      <p class="text-sm text-neutral/70">
+        Confirma los datos y el orden de las paradas elegidas en el mapa.
+      </p>
+    </div>
+    @if (error) {
+      <p class="rounded-lg bg-error/10 p-3 text-sm text-error" role="alert">{{ error }}</p>
+    }
+    @if (previewLoading()) {
+      <p class="rounded-lg bg-base-200 p-3 text-sm text-neutral/70">
+        Calculando ruta seleccionada...
+      </p>
+    } @else if (preview(); as routePreview) {
+      <div
+        class="grid grid-cols-2 gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm"
+      >
+        <span
+          ><strong class="block text-xs text-neutral/60">Distancia estimada</strong
+          >{{ routePreview.distanceKm }} km</span
+        >
+        <span
+          ><strong class="block text-xs text-neutral/60">Tiempo estimado</strong
+          >{{ routePreview.estimatedMinutes }} min</span
+        >
+      </div>
+    } @else if (previewError()) {
+      <p class="rounded-lg bg-error/10 p-3 text-sm text-error">{{ previewError() }}</p>
+    }
+    <label class="form-control"
+      ><span class="label-text font-semibold">Nombre de la ruta</span
+      ><input
+        class="input input-bordered"
+        formControlName="name"
+        placeholder="Ruta Lima Centro - Mañana" /></label
+    ><label class="form-control"
+      ><span class="label-text font-semibold"
+        >Descripción <span class="font-normal text-neutral/50">(opcional)</span></span
+      ><textarea
+        class="textarea textarea-bordered"
+        rows="2"
+        formControlName="description"
+        placeholder="Indicaciones para el despacho"
+      ></textarea>
+    </label>
+    <section class="rounded-xl border border-base-300 p-4">
+      <div class="mb-3 flex items-baseline justify-between gap-3">
+        <div>
+          <h4 class="font-semibold">Orden de paradas</h4>
+          <p class="text-xs text-neutral/60">Este orden se guardará en la ruta.</p>
+        </div>
+        <span class="badge badge-primary">{{ selectedOrders().length }}</span>
+      </div>
+      <ol class="max-h-80 space-y-2 overflow-y-auto pr-1">
+        @for (order of selectedOrders(); track order.id; let index = $index) {
+          <li class="flex items-center gap-2 rounded-lg bg-base-200 p-3">
+            <span class="badge badge-primary">{{ index + 1 }}</span
+            ><span class="min-w-0 flex-1"
+              ><strong class="block truncate text-sm"
+                >{{ order.code }} · {{ order.recipientName }}</strong
+              ><span class="block truncate text-xs text-neutral/60"
+                >{{ order.districtName ?? 'Sin distrito' }} ·
+                {{ order.address ?? 'Sin dirección' }}</span
+              ></span
+            >
+            <div class="join">
+              <button
+                type="button"
+                class="btn btn-ghost btn-xs join-item"
+                [disabled]="index === 0"
+                (click)="moveOrder(order.id, -1)"
+              >
+                ↑</button
+              ><button
+                type="button"
+                class="btn btn-ghost btn-xs join-item"
+                [disabled]="index === selectedOrders().length - 1"
+                (click)="moveOrder(order.id, 1)"
+              >
+                ↓
+              </button>
+            </div>
+          </li>
+        }
+      </ol>
+    </section>
+    <div class="flex justify-end gap-2 border-t border-base-300 pt-4">
+      <app-button variant="secondary" [disabled]="saving" (clicked)="closed.emit()"
+        >Cancelar</app-button
+      ><app-button
+        type="submit"
+        [loading]="saving"
+        [disabled]="saving || previewLoading() || !preview()"
+        >Generar ruta</app-button
+      >
+    </div>
+  </form></app-modal
+>

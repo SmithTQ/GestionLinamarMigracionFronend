@@ -1,0 +1,271 @@
+<app-modal [isOpen]="isOpen" size="xl" (closed)="closed.emit()">
+  <form class="modal-form-stack" [formGroup]="form" (ngSubmit)="submit()">
+    <header class="rounded-2xl border border-primary/15 bg-primary/5 p-5">
+      <div class="flex items-start gap-3">
+        <span
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white"
+        >
+          <app-icon name="user-check" [size]="20"></app-icon>
+        </span>
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+            Administracion de acceso
+          </p>
+          <h3 class="mt-1 text-xl font-bold text-neutral">
+            {{ user ? 'Editar usuario' : 'Crear usuario' }}
+          </h3>
+          <p class="mt-1 text-sm text-neutral/70">
+            Completa los datos, elige un rol y asigna solamente el ambito que necesita.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    @if (error) {
+      <div
+        class="rounded-xl border border-error/20 bg-error/10 p-3 text-sm text-error"
+        role="alert"
+      >
+        {{ error }}
+      </div>
+    }
+
+    <section class="rounded-2xl border border-base-300 p-5">
+      <div class="mb-5 flex items-start gap-3">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-base-200 text-primary">
+          <app-icon name="circle-user" [size]="17"></app-icon>
+        </span>
+        <div>
+          <h4 class="font-semibold text-neutral">Datos de acceso</h4>
+          <p class="text-xs text-neutral/60">
+            Informacion usada para identificar e iniciar sesion.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="form-control">
+          <span class="mb-1.5 text-sm font-semibold">Nombre completo</span>
+          <input class="input input-bordered" formControlName="name" placeholder="Ej. Ana Torres" />
+          @if (hasError('name')) {
+            <span class="mt-1.5 text-xs text-error">Ingresa el nombre completo.</span>
+          }
+        </label>
+
+        <label class="form-control">
+          <span class="mb-1.5 text-sm font-semibold">Usuario</span>
+          <input class="input input-bordered" formControlName="username" placeholder="ana.torres" />
+          @if (hasError('username')) {
+            <span class="mt-1.5 text-xs text-error"
+              >Usa letras, numeros, guiones o guion bajo.</span
+            >
+          }
+        </label>
+
+        <label class="form-control sm:col-span-2">
+          <span class="mb-1.5 text-sm font-semibold">Correo electronico</span>
+          <input
+            class="input input-bordered"
+            type="email"
+            formControlName="email"
+            placeholder="ana@empresa.com"
+          />
+          @if (hasError('email')) {
+            <span class="mt-1.5 text-xs text-error">Ingresa un correo electronico valido.</span>
+          }
+        </label>
+
+        <label class="form-control">
+          <span class="mb-1.5 text-sm font-semibold"
+            >Contrasena {{ user ? '(opcional)' : '' }}</span
+          >
+          <input
+            class="input input-bordered"
+            type="password"
+            formControlName="password"
+            placeholder="Crea una contrasena segura"
+          />
+          <span class="mt-1.5 text-xs leading-relaxed text-neutral/60">
+            Minimo 8 caracteres, una mayuscula, una minuscula y un numero.
+          </span>
+          @if (hasError('password')) {
+            <span class="mt-1.5 text-xs text-error">La contrasena no cumple los requisitos.</span>
+          }
+        </label>
+
+        <label class="form-control">
+          <span class="mb-1.5 text-sm font-semibold">Confirmar contrasena</span>
+          <input
+            class="input input-bordered"
+            type="password"
+            formControlName="passwordConfirmation"
+            placeholder="Repite la contrasena"
+          />
+          @if (
+            form.controls.passwordConfirmation.touched &&
+            form.controls.passwordConfirmation.hasError('passwordMismatch')
+          ) {
+            <span class="mt-1.5 text-xs text-error">Las contrasenas deben coincidir.</span>
+          }
+        </label>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-base-300 p-5">
+      <div class="mb-5 flex items-start gap-3">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-base-200 text-primary">
+          <app-icon name="settings" [size]="17"></app-icon>
+        </span>
+        <div>
+          <h4 class="font-semibold text-neutral">Rol operativo</h4>
+          <p class="text-xs text-neutral/60">
+            Cada usuario tiene un unico rol para evitar permisos y ambitos contradictorios.
+          </p>
+        </div>
+      </div>
+
+      @if (manageableRoles().length === 0) {
+        <p class="rounded-xl bg-warning/10 p-3 text-sm text-warning">
+          No hay roles operativos disponibles.
+        </p>
+      } @else {
+        @if (isRoleSelectionLocked() && selectedRole(); as role) {
+          <div class="flex items-center gap-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
+            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white">
+              <app-icon name="user-check" [size]="17"></app-icon>
+            </span>
+            <span>
+              <strong class="block text-sm text-neutral">{{ role.name }}</strong>
+              <span class="mt-0.5 block text-xs text-neutral/60">
+                Este administrador solo puede gestionar usuarios Despachadores.
+              </span>
+            </span>
+          </div>
+        } @else {
+          <div class="grid gap-3 sm:grid-cols-3">
+            @for (role of manageableRoles(); track role.id) {
+              <button
+                type="button"
+                class="group rounded-xl border p-4 text-left transition"
+                [class.border-primary]="selectedRole()?.id === role.id"
+                [class.bg-primary/5]="selectedRole()?.id === role.id"
+                [class.border-base-300]="selectedRole()?.id !== role.id"
+                [attr.aria-pressed]="selectedRole()?.id === role.id"
+                (click)="selectRole(role.id)"
+              >
+                <span class="flex items-center justify-between gap-3">
+                  <strong class="text-sm text-neutral">{{ role.name }}</strong>
+                  @if (selectedRole()?.id === role.id) {
+                    <span
+                      class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white"
+                    >
+                      <app-icon name="check" [size]="13"></app-icon>
+                    </span>
+                  }
+                </span>
+                <span class="mt-2 block text-xs leading-relaxed text-neutral/60">
+                  {{ role.description || role.slug }}
+                </span>
+              </button>
+            }
+          </div>
+        }
+        @if (form.controls.roleIds.touched && form.controls.roleIds.invalid) {
+          <p class="mt-3 text-xs text-error">Selecciona el rol que tendra este usuario.</p>
+        }
+      }
+    </section>
+
+    <section class="rounded-2xl border border-base-300 p-5">
+      <div class="mb-4 flex items-start gap-3">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-base-200 text-primary">
+          <app-icon name="settings" [size]="17"></app-icon>
+        </span>
+        <div>
+          <h4 class="font-semibold text-neutral">{{ scopeTitle() }}</h4>
+          <p class="text-xs leading-relaxed text-neutral/60">{{ scopeDescription() }}</p>
+        </div>
+      </div>
+
+      @switch (scopeType()) {
+        @case ('branches') {
+          @if (hasLockedBranch()) {
+            <div class="flex items-center gap-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
+              <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white">
+                <app-icon name="building-2" [size]="17"></app-icon>
+              </span>
+              <span>
+                <strong class="block text-sm text-neutral">{{ lockedBranchName }}</strong>
+                <span class="mt-0.5 block text-xs text-neutral/60">
+                  El usuario quedara asignado exclusivamente a la sucursal activa.
+                </span>
+              </span>
+            </div>
+          } @else if (branches.length === 0) {
+            <p class="rounded-xl bg-warning/10 p-3 text-sm text-warning">
+              No hay sucursales activas para asignar.
+            </p>
+          } @else {
+            <div class="grid gap-2 sm:grid-cols-2">
+              @for (branch of branches; track branch.id) {
+                <label
+                  class="flex cursor-pointer items-center gap-3 rounded-xl border border-base-300 p-3 transition hover:bg-base-200/60"
+                >
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-primary checkbox-sm"
+                    [checked]="form.controls.branchIds.value.includes(branch.id)"
+                    (change)="toggleBranch(branch.id)"
+                  />
+                  <span class="min-w-0">
+                    <strong class="block truncate text-sm">{{ branch.name }}</strong>
+                    <span class="block text-xs text-neutral/60">{{ branch.code }}</span>
+                  </span>
+                </label>
+              }
+            </div>
+          }
+          @if (
+            form.controls.branchIds.touched && form.controls.branchIds.hasError('requiredScope')
+          ) {
+            <p class="mt-3 text-xs text-error">
+              Asigna al menos una sucursal a este
+              {{
+                selectedRole()?.slug === 'dispatcher' ? 'despachador' : 'administrador operativo'
+              }}.
+            </p>
+          }
+        }
+        @default {
+          <div class="rounded-xl bg-base-200/70 p-4 text-sm text-neutral/70">
+            Este usuario tendra visibilidad global. No requiere asignaciones manuales de sucursales
+            ni campanas.
+          </div>
+        }
+      }
+    </section>
+
+    <label
+      class="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-base-300 p-4"
+    >
+      <span>
+        <strong class="block text-sm text-neutral">Usuario activo</strong>
+        <span class="mt-0.5 block text-xs text-neutral/60"
+          >Podra iniciar sesion y usar los permisos de su rol.</span
+        >
+      </span>
+      <input type="checkbox" class="toggle toggle-primary" formControlName="isActive" />
+    </label>
+
+    <footer
+      class="flex flex-col-reverse gap-2 border-t border-base-200 pt-4 sm:flex-row sm:justify-end"
+    >
+      <app-button variant="secondary" [disabled]="saving" (clicked)="closed.emit()"
+        >Cancelar</app-button
+      >
+      <app-button type="submit" [loading]="saving" [disabled]="saving">
+        {{ user ? 'Guardar cambios' : 'Crear usuario' }}
+      </app-button>
+    </footer>
+  </form>
+</app-modal>

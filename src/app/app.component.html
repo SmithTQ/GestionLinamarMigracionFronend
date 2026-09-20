@@ -1,5 +1,12 @@
 <router-outlet></router-outlet>
-<app-api-error-banner></app-api-error-banner>
+<app-notifications></app-notifications>
+
+@if (isHttpBusy()) {
+  <div class="http-activity-indicator" role="status" aria-live="polite">
+    <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
+    <span>Procesando...</span>
+  </div>
+}
 
 @if (isNavigating()) {
   <div

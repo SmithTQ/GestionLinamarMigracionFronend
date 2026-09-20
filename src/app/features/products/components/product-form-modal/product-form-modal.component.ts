@@ -11,6 +11,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Product, ProductCategory } from '../../models/product.model';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
+import { FocusInvalidDirective } from '@shared/directives/focus-invalid.directive';
 
 export interface ProductFormValue {
   subcategory_id: number | null;
@@ -25,7 +26,7 @@ export interface ProductFormValue {
 @Component({
   selector: 'app-product-form-modal',
   standalone: true,
-  imports: [ReactiveFormsModule, ButtonComponent, ModalComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, ModalComponent, FocusInvalidDirective],
   templateUrl: './product-form-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

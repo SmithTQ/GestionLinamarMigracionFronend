@@ -1,0 +1,73 @@
+<app-modal [isOpen]="isOpen" size="lg" (closed)="close()">
+  <div class="modal-form-stack">
+    <div>
+      <h3 class="text-lg font-semibold text-neutral">Usuarios de campaña</h3>
+      <p class="text-sm text-neutral/70">{{ campaignName }}</p>
+    </div>
+
+    @if (loading()) {
+      <div class="modal-loading-state flex flex-col gap-3 text-sm text-neutral/60">
+        <span class="loading loading-spinner loading-md"></span>
+        Cargando usuarios...
+      </div>
+    } @else {
+      @if (error()) {
+        <p class="rounded-lg bg-error/10 p-3 text-sm text-error" role="alert">{{ error() }}</p>
+      }
+
+      @if (canManage) {
+        <div class="rounded-xl border border-base-300 bg-base-200/40 p-3">
+          <label class="form-control">
+            <span class="label-text text-sm font-semibold">Asignar usuario</span>
+            <div class="flex flex-col gap-2 sm:flex-row">
+              <select
+                class="select select-bordered min-w-0 flex-1"
+                (change)="selectUser($any($event.target).value)"
+              >
+                <option value="">Selecciona un usuario</option>
+                @for (user of assignableUsers(); track user.id) {
+                  <option [value]="user.id">{{ user.name }} ({{ user.username }})</option>
+                }
+              </select>
+              <app-button
+                [disabled]="!selectedUserId() || saving()"
+                [loading]="saving()"
+                (clicked)="assign()"
+              >
+                Asignar
+              </app-button>
+            </div>
+          </label>
+        </div>
+      }
+
+      <div class="space-y-2">
+        <h4 class="text-sm font-semibold text-neutral">Usuarios con acceso</h4>
+        @for (user of assignedUsers(); track user.id) {
+          <article
+            class="flex items-center justify-between gap-3 rounded-xl border border-base-300 p-3"
+          >
+            <div class="min-w-0">
+              <p class="truncate text-sm font-semibold text-neutral">{{ user.name }}</p>
+              <p class="truncate text-xs text-neutral/60">
+                {{ user.username }}
+                @if (user.roles.length) {
+                  · {{ user.roles.join(', ') }}
+                }
+              </p>
+            </div>
+            @if (canManage) {
+              <app-button variant="ghost" size="sm" [disabled]="saving()" (clicked)="revoke(user)"
+                >Revocar</app-button
+              >
+            }
+          </article>
+        } @empty {
+          <p class="rounded-xl border border-dashed border-base-300 p-4 text-sm text-neutral/60">
+            No hay usuarios asignados.
+          </p>
+        }
+      </div>
+    }
+  </div>
+</app-modal>

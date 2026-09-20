@@ -31,9 +31,9 @@
     }
   </div>
 
-  @if (groups.length > 0) {
+  @if (groups().length > 0) {
     <div class="mt-6 flex flex-col gap-4">
-      @for (group of groups; track group) {
+      @for (group of groups(); track group.label) {
         <div class="flex flex-col gap-1">
           @if (!collapsed) {
             <p class="px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral/40">
@@ -67,12 +67,33 @@
   @if (!collapsed) {
     <div class="mt-auto px-2">
       <div
-        class="rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/10 to-transparent p-4"
+        class="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/15 via-secondary/10 to-transparent p-4 shadow-sm"
       >
-        <p class="text-xs uppercase tracking-[0.2em] text-neutral/50">Estado</p>
-        <p class="text-sm font-semibold text-neutral">Campana activa</p>
-        <p class="text-xs text-neutral/60">Madre 2026</p>
+        <div class="flex items-center gap-2">
+          <span
+            class="h-2.5 w-2.5 rounded-full bg-success shadow-[0_0_0_4px_hsl(var(--su)/0.15)]"
+          ></span>
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral/55">Contexto</p>
+        </div>
+        <p class="mt-2 text-sm font-bold text-primary">Campaña activa</p>
+        <p class="mt-1 truncate text-xs font-medium text-neutral/75">
+          {{ activeCampaign()?.name ?? 'Sin campaña seleccionada' }}
+        </p>
+        @if (activeCampaign(); as campaign) {
+          <p class="mt-1 text-[11px] text-neutral/50">{{ campaign.code }}</p>
+        }
       </div>
+    </div>
+  } @else {
+    <div
+      class="mt-auto flex justify-center pb-2"
+      [attr.title]="activeCampaign()?.name ?? 'Sin campaña seleccionada'"
+    >
+      <span
+        class="h-3 w-3 rounded-full"
+        [class.bg-success]="!!activeCampaign()"
+        [class.bg-warning]="!activeCampaign()"
+      ></span>
     </div>
   }
 </aside>

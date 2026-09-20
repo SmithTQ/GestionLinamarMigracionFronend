@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { ApiErrorStore } from '@core/services/api-error.store';
 import { AuthStore } from '@features/auth/store/auth.store';
+import { OperationalMode } from '@core/models/user.model';
 
 export const permissionGuard: CanActivateFn = (route) => {
   const authStore = inject(AuthStore);
@@ -9,11 +10,15 @@ export const permissionGuard: CanActivateFn = (route) => {
   const router = inject(Router);
   const permissions = route.data['permissions'] as string[] | undefined;
   const requireAll = route.data['requireAllPermissions'] === true;
+  const operationalModes = route.data['operationalModes'] as OperationalMode[] | undefined;
 
-  const hasAccess = requireAll
+  const hasRequiredPermissions = requireAll
     ? permissions?.every((permission) => authStore.hasPermission(permission))
     : permissions?.some((permission) => authStore.hasPermission(permission));
-  if (!permissions?.length || hasAccess) {
+  const currentMode = authStore.user()?.operational_context?.mode ?? null;
+  const hasOperationalAccess = !operationalModes?.length || operationalModes.includes(currentMode);
+
+  if ((!permissions?.length || hasRequiredPermissions) && hasOperationalAccess) {
     return true;
   }
 

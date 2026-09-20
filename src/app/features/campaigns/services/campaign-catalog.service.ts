@@ -59,8 +59,11 @@ export class CampaignCatalogService {
       .pipe(map((response) => getListData(response.datos)));
   }
 
-  listProducts(): Observable<CatalogProduct[]> {
-    const params = new HttpParams().set('per_page', 100).set('sort_by', 'name');
+  listProducts(branchId: number): Observable<CatalogProduct[]> {
+    const params = new HttpParams()
+      .set('per_page', 100)
+      .set('sort_by', 'name')
+      .set('branch_id', branchId);
     return this.http
       .get<CatalogPage<CatalogProduct>>(`${this.baseUrl}/products`, { params })
       .pipe(map((response) => getListData(response.datos)));

@@ -1,0 +1,80 @@
+<div class="public-form-field form-control">
+  <span [id]="fieldLabelId()" class="label-text mb-2 text-sm font-bold text-neutral">
+    {{ field.label }}
+    @if (field.required) { <span class="text-error">*</span> }
+  </span>
+  @if (field.description) {
+    <p [id]="fieldLabelId() + '-description'" class="mb-2 text-xs leading-5 text-neutral/60">{{ field.description }}</p>
+  }
+  @if (isProductField()) {
+    <div
+      [id]="fieldInputId() + '-options'"
+      class="grid gap-3 md:grid-cols-2"
+      [attr.aria-labelledby]="fieldLabelId()"
+      tabindex="-1"
+    >
+      @for (product of products; track product.sku) {
+        <button
+          type="button"
+          class="public-product-card flex items-center gap-3 rounded-2xl border p-3.5 text-left transition"
+          [class.border-primary]="value === product.sku"
+          [class.bg-primary/5]="value === product.sku"
+          [attr.aria-pressed]="value === product.sku"
+          [attr.aria-label]="product.name + ' - S/ ' + product.price"
+          (click)="selectValue(product.sku)"
+        >
+          <span class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-base-200 text-[10px] text-neutral/50">
+            @if (product.image_thumbnail_url ?? product.image_url) {
+              <img [src]="product.image_thumbnail_url ?? product.image_url" [alt]="product.name" class="h-full w-full object-cover" />
+            } @else { <span aria-hidden="true">IMG</span> }
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block truncate text-sm font-semibold text-neutral">{{ product.name }}</span>
+            <span class="mt-1 block text-sm font-semibold text-primary">S/ {{ product.price }}</span>
+          </span>
+          @if (value === product.sku) {
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content" title="Producto seleccionado">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-7.25 9a.75.75 0 0 1-1.12.043l-4.25-4.5a.75.75 0 1 1 1.09-1.03l3.66 3.874 6.72-8.346a.75.75 0 0 1 1.007-.093Z" clip-rule="evenodd" />
+              </svg>
+              <span class="sr-only">Seleccionado</span>
+            </span>
+          }
+        </button>
+      } @empty {
+        <p class="md:col-span-2 rounded-xl bg-warning/10 p-3 text-sm text-warning">No hay productos disponibles para este formulario.</p>
+      }
+    </div>
+  } @else if (isDistrictField()) {
+    <select [id]="fieldInputId()" [attr.aria-labelledby]="fieldLabelId()" class="public-form-control select select-bordered" [value]="value" (change)="selectValue($any($event.target).value)">
+      <option value="">Selecciona un distrito</option>
+      @for (district of districts; track district.code) {
+        <option [value]="district.code">{{ district.name }}{{ district.province ? ' - ' + district.province : '' }}</option>
+      }
+    </select>
+  } @else if (field.type === 'select' || field.key === 'delivery_time') {
+    <select [id]="fieldInputId()" [attr.aria-labelledby]="fieldLabelId()" class="public-form-control select select-bordered" [value]="value" (change)="selectValue($any($event.target).value)">
+      <option value="">Selecciona una opcion</option>
+      @for (option of fieldOptions(); track option) { <option [value]="option">{{ option }}</option> }
+    </select>
+  } @else if (field.type === 'textarea') {
+    <textarea [id]="fieldInputId()" [attr.aria-labelledby]="fieldLabelId()" class="public-form-control textarea textarea-bordered min-h-28" [value]="value" (input)="selectValue($any($event.target).value)"></textarea>
+  } @else if (field.type === 'map') {
+    <div [id]="fieldInputId()" tabindex="-1">
+      <app-location-picker [latitude]="latitude" [longitude]="longitude" (locationChange)="locationChange.emit($event)"></app-location-picker>
+    </div>
+  } @else if (field.type === 'file') {
+    <label class="public-file-drop block cursor-pointer rounded-2xl border-2 border-dashed border-base-300 p-5 text-center transition" [attr.aria-labelledby]="fieldLabelId()" (dragover)="$event.preventDefault()" (drop)="onFileDrop($event)">
+      <input class="sr-only" type="file" [id]="fieldInputId()" [accept]="fieldFileAccept()" (change)="onFileSelected($event)" />
+      @if (filePreview) {
+        <img [src]="filePreview" alt="Previsualizacion del archivo seleccionado" class="mx-auto max-h-48 rounded-xl object-contain" />
+        <p class="mt-2 text-xs text-neutral/60">Haz clic o arrastra otra imagen para reemplazarla.</p>
+      } @else {
+        <p class="text-sm font-medium text-neutral">Arrastra una imagen aqui</p>
+        <p class="mt-1 text-xs text-neutral/60">o haz clic para seleccionarla</p>
+      }
+    </label>
+  } @else {
+    <input [id]="fieldInputId()" [attr.aria-labelledby]="fieldLabelId()" class="public-form-control input input-bordered" [type]="field.type === 'phone' ? 'tel' : field.type" [value]="value" (input)="selectValue($any($event.target).value)" />
+  }
+</div>

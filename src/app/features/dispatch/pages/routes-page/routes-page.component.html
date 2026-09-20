@@ -1,0 +1,175 @@
+<app-page-container>
+  <section class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <span class="badge badge-primary badge-outline">Despacho</span>
+      <h1 class="mt-2 text-3xl font-semibold text-neutral">Rutas</h1>
+      <p class="text-sm text-neutral/70">Planifica las entregas de la campaña activa.</p>
+    </div>
+    <app-button
+      icon="route"
+      [disabled]="selectedOrderIds().length === 0"
+      (clicked)="openGenerator()"
+      >Generar ruta
+      @if (selectedOrderIds().length) {
+        ({{ selectedOrderIds().length }})
+      }
+    </app-button>
+  </section>
+  <section class="mt-5 rounded-2xl border border-base-300 bg-base-100 p-4 sm:p-5">
+    <div class="mb-4">
+      <h2 class="font-semibold text-neutral">Selecciona los pedidos en el mapa</h2>
+      <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-neutral/65">
+        <span>Pedidos ubicables de la campaña activa.</span>
+        <span class="badge badge-primary badge-outline">Pendientes de ruta: {{ pendingRouteCount() }}</span>
+        @if (assignedRouteCount()) {
+          <span class="badge badge-neutral badge-outline">Asignados: {{ assignedRouteCount() }}</span>
+        }
+      </div>
+      <p class="sr-only">
+        Solo se muestran pedidos elegibles de la campaña activa.
+      </p>
+    </div>
+    @if (mapOrdersLoading()) {
+      <div class="flex min-h-96 items-center justify-center">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    } @else if (mapOrdersError()) {
+      <p class="rounded-xl bg-error/10 p-4 text-sm text-error">{{ mapOrdersError() }}</p>
+    } @else if (mapOrders().length === 0) {
+      <p class="rounded-xl bg-base-200 p-4 text-sm text-neutral/65">
+        No hay pedidos con ubicación registrada para mostrar en el mapa.
+      </p>
+    } @else {
+      @if (!routeOrigin()) {
+        <p class="mb-4 rounded-xl bg-warning/10 p-4 text-sm text-warning">
+          La sucursal de la campaña no tiene coordenadas configuradas. No es posible calcular la
+          ruta.
+        </p>
+      }
+      <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div>
+          <app-route-orders-map
+            [orders]="mapOrders()"
+            [origin]="routeOrigin()"
+            [selectedOrderIds]="selectedOrderIds()"
+            (orderToggled)="toggleOrder($event)"
+            (previewChanged)="onPreviewChanged($event)"
+          ></app-route-orders-map>
+          @if (routePreview(); as preview) {
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <div class="rounded-xl bg-primary/5 p-3 text-sm">
+                <span class="block text-xs text-neutral/60">Distancia estimada</span
+                ><strong>{{ preview.distanceKm }} km</strong>
+              </div>
+              <div class="rounded-xl bg-primary/5 p-3 text-sm">
+                <span class="block text-xs text-neutral/60">Tiempo estimado</span
+                ><strong>{{ preview.estimatedMinutes }} min</strong>
+              </div>
+            </div>
+          }
+        </div>
+        <aside class="rounded-xl border border-base-300 bg-base-200/60 p-3 sm:p-4">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h3 class="font-semibold text-neutral">Pedidos seleccionados</h3>
+              <p class="text-xs text-neutral/60">Define el orden de visita desde el mapa.</p>
+            </div>
+            <span class="badge badge-primary">{{ selectedOrders().length }}</span>
+          </div>
+          <p class="mt-3 rounded-lg bg-base-100 p-3 text-xs text-neutral/65">
+            Los marcadores grises ya tienen una ruta asignada o no están disponibles para planificar.
+          </p>
+          @if (selectedOrders().length === 0) {
+            <p class="mt-4 rounded-lg border border-dashed border-base-300 bg-base-100 p-3 text-sm text-neutral/60">
+              Selecciona marcadores para preparar la ruta.
+            </p>
+          } @else {
+            <ol class="mt-4 space-y-2">
+              @for (order of selectedOrders(); track order.id; let index = $index) {
+                <li class="flex items-start gap-2 rounded-lg bg-base-100 p-3 shadow-sm">
+                  <span class="badge badge-primary badge-outline mt-0.5">{{ index + 1 }}</span>
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold">{{ order.productName }}</p>
+                    <p class="truncate text-xs text-neutral/65">{{ order.recipientName }}</p>
+                    <p class="mt-1 text-xs text-neutral/65">
+                      {{ order.deliveryTime || 'Sin horario definido' }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-xs text-error"
+                    [attr.aria-label]="'Quitar pedido ' + order.code"
+                    (click)="toggleOrder(order.id)"
+                  >
+                    Quitar
+                  </button>
+                </li>
+              }
+            </ol>
+          }
+        </aside>
+      </div>
+    }
+  </section>
+  @if (loadError()) {
+    <p class="mt-4 rounded-xl bg-error/10 p-3 text-sm text-error">{{ loadError() }}</p>
+  }
+  <app-table
+    class="mt-5"
+    title="Rutas de entrega"
+    description="Solo se muestran rutas de la campaña activa."
+    size="xs"
+    [columns]="columns"
+    [rows]="rows()"
+    [loading]="loading()"
+    [actions]="actions"
+    [useContextMenuActions]="true"
+    [serverSide]="true"
+    [pagination]="pagination()"
+    (pageChanged)="changePage($event)"
+    (pageSizeChanged)="changePageSize($event)"
+    (actionClicked)="onAction($event)"
+  ></app-table>
+  <app-route-generator-modal
+    [isOpen]="generatorOpen()"
+    [campaignId]="context.activeCampaignId()"
+    [orders]="mapOrders()"
+    [origin]="routeOrigin()"
+    [selectedOrderIds]="selectedOrderIds()"
+    [saving]="saving()"
+    [error]="mutationError()"
+    (closed)="closeGenerator()"
+    (submitted)="generate($event)"
+  ></app-route-generator-modal>
+  <app-courier-invitation-modal
+    [isOpen]="!!assignRoute()"
+    [routeName]="assignRoute()?.name ?? ''"
+    [courierName]="assignRoute()?.courier?.name ?? ''"
+    [courierWhatsApp]="assignRoute()?.courier?.phone ?? ''"
+    [isReissuing]="!!assignRoute()?.courier"
+    [saving]="saving()"
+    [error]="mutationError()"
+    [invitation]="courierInvitation()"
+    (closed)="closeAssign()"
+    (submitted)="createCourierInvitation($event)"
+  ></app-courier-invitation-modal>
+  <app-modal [isOpen]="!!routeToCancel()" (closed)="closeCancel()">
+    <div class="modal-form-stack">
+      <div>
+        <span class="badge badge-warning badge-outline">Accion irreversible</span>
+        <h3 class="mt-2 text-lg font-semibold">Cancelar ruta</h3>
+        <p class="mt-1 text-sm text-neutral/70">
+          Se cancelara <strong>{{ routeToCancel()?.name }}</strong>. La ruta quedara conservada
+          para trazabilidad operativa.
+        </p>
+      </div>
+      @if (mutationError()) {
+        <p class="rounded-lg bg-error/10 p-3 text-sm text-error">{{ mutationError() }}</p>
+      }
+      <div class="flex justify-end gap-2">
+        <app-button variant="secondary" [disabled]="saving()" (clicked)="closeCancel()">Volver</app-button>
+        <app-button variant="outline" [loading]="saving()" [disabled]="saving()" (clicked)="cancelRoute()">Cancelar ruta</app-button>
+      </div>
+    </div>
+  </app-modal>
+</app-page-container>

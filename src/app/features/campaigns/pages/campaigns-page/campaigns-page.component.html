@@ -23,6 +23,11 @@
   @if (catalogError()) {
     <p class="mt-4 rounded-xl bg-warning/10 p-3 text-sm text-warning">{{ catalogError() }}</p>
   }
+  @if (invitationError() && !isInvitationOpen()) {
+    <p class="mt-4 rounded-xl bg-warning/10 p-3 text-sm text-warning" role="alert">
+      {{ invitationError() }}
+    </p>
+  }
 
   <app-table
     title="Campanas registradas"
@@ -49,8 +54,9 @@
 
   <app-campaign-create-modal
     [isOpen]="isCreateModalOpen()"
-    [campaign]="editingCampaign()"
-    [districtLists]="districtLists()"
+      [campaign]="editingCampaign()"
+      [districtLists]="districtLists()"
+      [activeBranchName]="activeBranch()?.name ?? ''"
     [isLoadingData]="isLoadingCampaignDetail()"
     [isSaving]="isCreating()"
     [nameError]="nameError()"
@@ -60,7 +66,7 @@
   ></app-campaign-create-modal>
 
   <app-modal [isOpen]="isConfirmationOpen()" (closed)="closeConfirmation()">
-    <div class="space-y-3">
+    <div class="modal-form-stack">
       <h3 class="text-lg font-semibold text-neutral">Campana registrada</h3>
       <p class="text-sm text-neutral/70">
         La campana se registro correctamente. Ahora puedes crear el formulario dinamico de pedidos.
@@ -73,7 +79,7 @@
   </app-modal>
 
   <app-modal [isOpen]="isCloseConfirmationOpen()" (closed)="closeCloseConfirmation()">
-    <div class="space-y-4">
+    <div class="modal-form-stack">
       <div>
         <h3 class="text-lg font-semibold text-neutral">Cerrar campana</h3>
         <p class="text-sm text-neutral/70">
@@ -105,6 +111,26 @@
     [campaignId]="formCampaign()?.id ?? lastCreatedCampaignId()"
     [campaign]="formCampaign()"
     (closed)="closeFormBuilder()"
-    (saved)="closeFormBuilder()"
+    (saved)="onFormSaved()"
+    (published)="onFormPublished()"
+    (campaignOpenRequested)="openCampaignAndPublish($event)"
   ></app-campaign-form-builder-modal>
+
+  <app-customer-invitation-modal
+    [isOpen]="isInvitationOpen()"
+    [isLoadingData]="isLoadingInvitation()"
+    [isSaving]="isCreatingInvitation()"
+    [error]="invitationError()"
+    [invitation]="invitation()"
+    (closed)="closeInvitation()"
+    (submitted)="createInvitation($event)"
+  ></app-customer-invitation-modal>
+
+  <app-campaign-users-modal
+    [isOpen]="isCampaignUsersOpen()"
+    [campaignId]="campaignForUsers()?.id ?? null"
+    [campaignName]="campaignForUsers()?.name ?? ''"
+    [canManage]="canManageCampaignUsers()"
+    (closed)="closeCampaignUsers()"
+  ></app-campaign-users-modal>
 </app-page-container>

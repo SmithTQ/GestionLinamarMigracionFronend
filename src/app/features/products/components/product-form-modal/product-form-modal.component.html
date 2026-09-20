@@ -1,5 +1,5 @@
 <app-modal [isOpen]="isOpen" (closed)="closed.emit()">
-  <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
+  <form appFocusInvalid class="modal-form-stack" [formGroup]="form" (ngSubmit)="submit()">
     <div>
       <h2 class="text-xl font-semibold text-neutral">
         {{ product ? 'Editar producto' : 'Crear producto' }}

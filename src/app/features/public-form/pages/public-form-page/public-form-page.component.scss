@@ -1,0 +1,131 @@
+.public-form-page {
+  background:
+    radial-gradient(circle at 8% 4%, hsl(var(--p) / 0.12), transparent 28rem),
+    radial-gradient(circle at 92% 18%, hsl(var(--s) / 0.1), transparent 24rem),
+    hsl(var(--b2));
+}
+
+.public-form-card {
+  border: 1px solid hsl(var(--bc) / 0.08);
+}
+
+.public-form-layout {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.72fr) minmax(0, 1.28fr);
+}
+
+.public-form-header {
+  background:
+    linear-gradient(135deg, hsl(var(--b1)) 0%, hsl(var(--b1)) 62%, hsl(var(--p) / 0.07) 100%);
+}
+
+.public-form-body {
+  min-width: 0;
+  border-left: 1px solid hsl(var(--bc) / 0.08);
+}
+
+.public-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.public-form-actions {
+  margin-top: 1.5rem;
+}
+
+.public-form-header::after {
+  position: absolute;
+  right: -5rem;
+  top: -7rem;
+  width: 18rem;
+  height: 18rem;
+  border: 1px solid hsl(var(--p) / 0.16);
+  border-radius: 999px;
+  content: '';
+}
+
+.public-form-intro {
+  background: hsl(var(--p) / 0.07);
+  border: 1px solid hsl(var(--p) / 0.12);
+}
+
+.public-form-steps {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.public-form-step {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 2rem;
+  color: hsl(var(--bc) / 0.5);
+  text-align: left;
+}
+
+.public-form-step:not(:disabled) {
+  cursor: pointer;
+}
+
+.public-form-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border: 1px solid hsl(var(--bc) / 0.18);
+  border-radius: 999px;
+  background: hsl(var(--b1));
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.public-form-step-active,
+.public-form-step-complete {
+  color: hsl(var(--p));
+}
+
+.public-form-step-active .public-form-step-number {
+  border-color: hsl(var(--p));
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  box-shadow: 0 0 0 4px hsl(var(--p) / 0.12);
+}
+
+.public-form-step-complete .public-form-step-number {
+  border-color: hsl(var(--p) / 0.35);
+  background: hsl(var(--p) / 0.1);
+}
+
+.public-form-step-line {
+  height: 1px;
+  flex: 1;
+  min-width: 0.75rem;
+  margin: 0 0.65rem;
+  background: hsl(var(--bc) / 0.14);
+}
+
+.public-form-step-line-complete {
+  background: hsl(var(--p) / 0.5);
+}
+
+@media (max-width: 767px) {
+  .public-form-layout {
+    display: block;
+  }
+
+  .public-form-header {
+    border-bottom: 1px solid hsl(var(--bc) / 0.08);
+  }
+
+  .public-form-body {
+    border-left: 0;
+  }
+
+  .public-form-step-line {
+    margin: 0 0.35rem;
+  }
+}

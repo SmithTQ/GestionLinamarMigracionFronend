@@ -1,0 +1,22 @@
+<app-modal [isOpen]="isOpen" size="md" (closed)="closed.emit()">
+  <div class="modal-form-stack">
+    <div>
+      <h3 class="text-lg font-semibold text-neutral">La campaña no está abierta</h3>
+      <p class="mt-2 text-sm leading-6 text-neutral/70">
+        Para publicar este formulario, la campaña debe estar abierta. ¿Deseas abrir la campaña y
+        publicar el formulario ahora?
+      </p>
+    </div>
+    @if (error) {
+      <p class="rounded-xl bg-error/10 px-3 py-2 text-sm text-error" role="alert">{{ error }}</p>
+    }
+    <div class="flex flex-wrap justify-end gap-2 border-t border-base-200 pt-4">
+      <app-button variant="secondary" [disabled]="isSaving" (clicked)="closed.emit()">
+        Cancelar
+      </app-button>
+      <app-button [loading]="isSaving" [disabled]="isSaving" (clicked)="confirmed.emit()">
+        {{ isSaving ? 'Abriendo y publicando...' : 'Abrir y publicar' }}
+      </app-button>
+    </div>
+  </div>
+</app-modal>

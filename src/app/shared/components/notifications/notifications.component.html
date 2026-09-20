@@ -1,0 +1,23 @@
+<section class="notification-center" aria-live="polite" aria-relevant="additions">
+  @for (notification of notifications(); track notification.id) {
+    <article
+      class="notification-card"
+      [class]="'notification-card notification-card--' + notification.type"
+      [attr.role]="notification.type === 'error' ? 'alert' : 'status'"
+    >
+      <span class="notification-card__accent" aria-hidden="true"></span>
+      <div class="notification-card__content">
+        <p class="notification-card__title">{{ notification.title }}</p>
+        <p class="notification-card__message">{{ notification.message }}</p>
+      </div>
+      <button
+        type="button"
+        class="notification-card__close"
+        [attr.aria-label]="'Cerrar: ' + notification.title"
+        (click)="dismiss(notification)"
+      >
+        Cerrar
+      </button>
+    </article>
+  }
+</section>

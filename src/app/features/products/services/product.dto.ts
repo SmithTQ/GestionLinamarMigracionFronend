@@ -53,6 +53,7 @@ export interface ProductSubcategoryPayload {
 }
 
 export interface ProductPayload {
+  branch_id?: number;
   subcategory_id?: number | null;
   sku?: string;
   name: string;

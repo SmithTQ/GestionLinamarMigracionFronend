@@ -1,0 +1,64 @@
+<main class="min-h-full p-6 sm:p-10">
+  <section class="mx-auto max-w-3xl rounded-3xl bg-base-100 p-6 shadow-sm sm:p-8">
+    <div class="mb-8">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Contexto activo</p>
+      <h1 class="mt-2 text-2xl font-semibold text-neutral">
+        {{ requiresBranchSelection() && !activeBranchId() ? 'Selecciona una sucursal' : 'Selecciona una campana' }}
+      </h1>
+      <p class="mt-2 text-sm text-neutral/70">
+        @if (requiresBranchSelection() && !activeBranchId()) {
+          Elige la sucursal que administraras durante esta sesion.
+        } @else {
+          Elige la campana cuyos pedidos y operaciones deseas consultar.
+        }
+      </p>
+    </div>
+
+    @if (requiresBranchSelection() && !activeBranchId()) {
+      @if (branches().length === 0) {
+        <p class="rounded-2xl bg-warning/10 p-4 text-sm text-warning">
+          No tienes sucursales asignadas. Solicita acceso al superadministrador.
+        </p>
+      } @else {
+        <div class="grid gap-3 sm:grid-cols-2">
+          @for (branch of branches(); track branch.id) {
+            <button
+              type="button"
+              class="rounded-2xl border border-base-200 bg-base-100 p-4 text-left transition hover:border-primary hover:bg-primary/5"
+              (click)="selectBranch(branch.id)"
+            >
+              <span class="block text-sm font-semibold text-neutral">{{ branch.name }}</span>
+              <span class="mt-1 block text-xs text-neutral/60">{{ branch.code }}</span>
+            </button>
+          }
+        </div>
+      }
+    } @else if (isLoading()) {
+      <div class="flex min-h-40 items-center justify-center">
+        <app-loading label="Cargando campanas disponibles..."></app-loading>
+      </div>
+    } @else if (error()) {
+      <p class="rounded-2xl bg-error/10 p-4 text-sm text-error" role="alert">{{ error() }}</p>
+    } @else if (campaigns().length === 0) {
+      <p class="rounded-2xl bg-warning/10 p-4 text-sm text-warning">
+        No tienes campanas asignadas para consultar. Solicita acceso al administrador.
+      </p>
+    } @else {
+      <div class="grid gap-3 sm:grid-cols-2">
+        @for (campaign of campaigns(); track campaign.id) {
+          <button
+            type="button"
+            class="rounded-2xl border border-base-200 bg-base-100 p-4 text-left transition hover:border-primary hover:bg-primary/5"
+            (click)="selectCampaign(campaign.id)"
+          >
+            <span class="block text-sm font-semibold text-neutral">{{ campaign.name }}</span>
+            <span class="mt-1 block text-xs text-neutral/60">{{ campaign.code }}</span>
+            <span class="mt-4 inline-flex rounded-full bg-base-200 px-2.5 py-1 text-xs text-neutral/70">
+              {{ campaign.status }}
+            </span>
+          </button>
+        }
+      </div>
+    }
+  </section>
+</main>

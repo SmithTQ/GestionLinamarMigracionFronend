@@ -5,6 +5,8 @@ export interface Campaign {
   code: string;
   name: string;
   status: 'draft' | 'open' | 'closed' | 'cancelled';
+  formStatus?: 'draft' | 'published' | 'closed' | null;
+  hasPublishedForm?: boolean;
   startsOn: string;
   endsOn?: string;
   budget?: number;
@@ -12,7 +14,7 @@ export interface Campaign {
   deliveredCount?: number;
   totalObtained?: number;
   districtLists?: DistrictList[];
-  branches?: CampaignBranch[];
+  branch?: CampaignBranch | null;
   districts?: CampaignDistrict[];
 }
 
@@ -20,6 +22,9 @@ export interface CampaignBranch {
   id: number;
   code: string;
   name: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface CampaignDistrict {

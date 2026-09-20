@@ -1,0 +1,40 @@
+<app-page-container
+  ><section class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <span class="badge badge-primary badge-outline">Administración</span>
+      <h1 class="mt-2 text-3xl font-semibold">Sucursales</h1>
+      <p class="text-sm text-neutral/70">
+        Configura las sedes y su ubicación de partida para las rutas.
+      </p>
+    </div>
+    @if (canManage) {
+      <app-button icon="plus" (clicked)="openCreate()">Nueva sucursal</app-button>
+    }
+  </section>
+  @if (error()) {
+    <p class="mt-4 rounded-xl bg-error/10 p-3 text-sm text-error">{{ error() }}</p>
+  }
+  <app-table
+    class="mt-5"
+    title="Sucursales"
+    description="La ubicación es obligatoria para generar rutas."
+    [columns]="columns"
+    [rows]="rows()"
+    [loading]="loading()"
+    [actions]="actions"
+    [useContextMenuActions]="true"
+    [serverSide]="true"
+    [pagination]="pagination()"
+    (pageChanged)="load($event)"
+    (pageSizeChanged)="load(1, $event)"
+    (actionClicked)="action($event)"
+  ></app-table
+  ><app-branch-form-modal
+    [isOpen]="modalOpen()"
+    [branch]="editing()"
+    [saving]="saving()"
+    [error]="mutationError()"
+    (closed)="closeModal()"
+    (submitted)="save($event)"
+  ></app-branch-form-modal
+></app-page-container>

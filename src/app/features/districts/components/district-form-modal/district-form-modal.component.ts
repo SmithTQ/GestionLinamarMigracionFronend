@@ -9,6 +9,7 @@ import {
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { FocusInvalidDirective } from '@shared/directives/focus-invalid.directive';
 import { District } from '../../models/district.model';
 
 export interface DistrictFormValue {
@@ -21,7 +22,7 @@ export interface DistrictFormValue {
 @Component({
   selector: 'app-district-form-modal',
   standalone: true,
-  imports: [ReactiveFormsModule, ModalComponent, ButtonComponent],
+  imports: [ReactiveFormsModule, ModalComponent, ButtonComponent, FocusInvalidDirective],
   templateUrl: './district-form-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

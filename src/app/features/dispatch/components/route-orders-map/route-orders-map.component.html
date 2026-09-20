@@ -1,0 +1,19 @@
+<div
+  class="route-orders-map relative overflow-hidden rounded-xl border border-base-300 bg-base-200"
+>
+  <div
+    #mapContainer
+    class="route-orders-map__canvas"
+    aria-label="Mapa de pedidos disponibles"
+  ></div>
+  @if (loading()) {
+    <div class="absolute inset-0 flex items-center justify-center bg-base-100/70">
+      <span class="loading loading-spinner text-primary"></span>
+    </div>
+  }
+  @if (error()) {
+    <p class="absolute inset-x-4 bottom-4 rounded-lg bg-error p-3 text-sm text-error-content">
+      {{ error() }}
+    </p>
+  }
+</div>

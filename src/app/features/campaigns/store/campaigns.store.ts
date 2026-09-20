@@ -3,10 +3,12 @@ import { Observable, catchError, finalize, tap, EMPTY } from 'rxjs';
 import { Campaign, CampaignPage } from '../models/campaign.model';
 import { CampaignListQuery, CampaignsService } from '../services/campaigns.service';
 import { CampaignPayload } from '../services/campaign.dto';
+import { SessionDataStateService } from '@core/services/session-data-state.service';
 
 @Injectable({ providedIn: 'root' })
 export class CampaignsStore {
   private readonly campaignsService = inject(CampaignsService);
+  private readonly sessionDataState = inject(SessionDataStateService);
   private readonly campaignsSignal = signal<Campaign[]>([]);
   private readonly loadingSignal = signal(false);
   private readonly errorSignal = signal<string | null>(null);
@@ -29,6 +31,10 @@ export class CampaignsStore {
   readonly activeCount = computed(
     () => this.campaignsSignal().filter((campaign) => campaign.status === 'open').length,
   );
+
+  constructor() {
+    this.sessionDataState.register(() => this.reset());
+  }
 
   load(query: CampaignListQuery = {}): void {
     const requestId = ++this.loadRequestId;
@@ -98,4 +104,25 @@ export class CampaignsStore {
       }),
     );
   }
+
+  reset(): void {
+    this.loadRequestId += 1;
+    this.campaignsSignal.set([]);
+    this.paginationSignal.set(createEmptyPage());
+    this.loadingSignal.set(false);
+    this.errorSignal.set(null);
+  }
+}
+
+function createEmptyPage(): CampaignPage {
+  return {
+    items: [],
+    page: 1,
+    from: null,
+    to: null,
+    pageSize: 10,
+    total: 0,
+    totalPages: 1,
+    links: [],
+  };
 }

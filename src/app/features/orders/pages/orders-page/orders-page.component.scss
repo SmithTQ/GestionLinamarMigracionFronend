@@ -1,3 +1,15 @@
 :host {
   display: block;
 }
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field > span,
+.field-label {
+  color: hsl(var(--bc) / 0.6);
+  font-size: 0.75rem;
+  font-weight: 700;
+}

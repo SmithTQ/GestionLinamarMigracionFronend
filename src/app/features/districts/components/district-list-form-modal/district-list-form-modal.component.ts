@@ -12,6 +12,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
+import { FocusInvalidDirective } from '@shared/directives/focus-invalid.directive';
 import { District, DistrictList, LocationOption } from '../../models/district.model';
 
 export interface DistrictListFormValue {
@@ -24,7 +25,13 @@ export interface DistrictListFormValue {
 @Component({
   selector: 'app-district-list-form-modal',
   standalone: true,
-  imports: [ReactiveFormsModule, ModalComponent, ButtonComponent, LoadingComponent],
+  imports: [
+    ReactiveFormsModule,
+    ModalComponent,
+    ButtonComponent,
+    LoadingComponent,
+    FocusInvalidDirective,
+  ],
   templateUrl: './district-list-form-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -36,6 +43,7 @@ export class DistrictListFormModalComponent implements OnChanges {
   @Input() provinces: LocationOption[] = [];
   @Input() defaultDepartmentCode = '';
   @Input() isSaving = false;
+  @Input() isLoadingData = false;
   @Input() isLoadingDistricts = false;
   @Output() closed = new EventEmitter<void>();
   @Output() submitted = new EventEmitter<DistrictListFormValue>();
@@ -77,7 +85,7 @@ export class DistrictListFormModalComponent implements OnChanges {
   }
 
   close(): void {
-    if (this.isSaving || this.isLoadingDistricts) {
+    if (this.isSaving || this.isLoadingData || this.isLoadingDistricts) {
       return;
     }
     this.closed.emit();

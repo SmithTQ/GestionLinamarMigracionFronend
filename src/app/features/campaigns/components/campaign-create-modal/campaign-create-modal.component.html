@@ -1,5 +1,5 @@
 <app-modal [isOpen]="isOpen" (closed)="close()">
-  <div class="relative space-y-4">
+  <div class="modal-form-stack relative">
     @if (isLoadingData) {
       <div
         class="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-base-100/75 backdrop-blur-[1px]"
@@ -55,6 +55,13 @@
         "
         (valueChanged)="form.controls.endsOn.setValue($event)"
       ></app-input>
+      <div class="rounded-lg border border-base-300 bg-base-200/50 px-3 py-2 md:col-span-2">
+        <p class="text-xs font-medium uppercase tracking-wide text-neutral/60">Sucursal activa</p>
+        <p class="mt-1 text-sm font-semibold text-neutral">{{ activeBranchName }}</p>
+        <p class="mt-1 text-xs text-neutral/65">
+          La campana se registrara en la sucursal activa de esta sesion.
+        </p>
+      </div>
       <label class="form-control w-full md:col-span-2">
         <span class="label-text text-sm font-medium text-neutral">Estado</span>
         <select

@@ -3,10 +3,12 @@ import { Observable, OperatorFunction, catchError, finalize, throwError } from '
 import { District, DistrictList, PagedResult } from '../models/district.model';
 import { DistrictListQuery, DistrictsService } from '../services/districts.service';
 import { DistrictListPayload, DistrictPayload } from '../services/district.dto';
+import { SessionDataStateService } from '@core/services/session-data-state.service';
 
 @Injectable({ providedIn: 'root' })
 export class DistrictsStore {
   private readonly service = inject(DistrictsService);
+  private readonly sessionDataState = inject(SessionDataStateService);
   private readonly districtsState = signal<District[]>([]);
   private readonly districtListsState = signal<DistrictList[]>([]);
   private readonly districtPageState = signal<PagedResult<District>>({
@@ -34,6 +36,10 @@ export class DistrictsStore {
   readonly isLoading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly hasDistricts = computed(() => this.districtsState().length > 0);
+
+  constructor() {
+    this.sessionDataState.register(() => this.reset());
+  }
 
   loadDistricts(query: DistrictListQuery): void {
     const requestId = ++this.loadRequestId;
@@ -135,4 +141,18 @@ export class DistrictsStore {
       return throwError(() => error);
     });
   }
+
+  reset(): void {
+    this.loadRequestId += 1;
+    this.districtsState.set([]);
+    this.districtListsState.set([]);
+    this.districtPageState.set(createEmptyPage<District>());
+    this.districtListPageState.set(createEmptyPage<DistrictList>());
+    this.loadingState.set(false);
+    this.errorState.set(null);
+  }
+}
+
+function createEmptyPage<T>(): PagedResult<T> {
+  return { items: [], page: 1, pageSize: 10, total: 0, totalPages: 1 };
 }

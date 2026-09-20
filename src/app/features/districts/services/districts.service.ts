@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { EMPTY, Observable, expand, map, reduce } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '@core/models/api-response.model';
+import { BranchContextStore } from '@features/branches/store/branch-context.store';
 import { District, DistrictList, LocationOption, PagedResult } from '../models/district.model';
 import {
   DistrictListPayload,
@@ -27,6 +28,7 @@ export interface DistrictListQuery {
 @Injectable({ providedIn: 'root' })
 export class DistrictsService {
   private readonly http = inject(HttpClient);
+  private readonly branchContext = inject(BranchContextStore);
   private readonly baseUrl = environment.apiUrl;
 
   listDistricts(query: DistrictListQuery = {}): Observable<PagedResult<District>> {
@@ -93,6 +95,10 @@ export class DistrictsService {
     if (query.search?.trim()) {
       params = params.set('search', query.search.trim());
     }
+    const branchId = this.branchContext.activeBranchId();
+    if (branchId) {
+      params = params.set('branch_id', branchId);
+    }
     if (query.sort) {
       params = params
         .set('sort_by', mapSortKey(query.sort.key))
@@ -132,8 +138,12 @@ export class DistrictsService {
   }
 
   createDistrictList(payload: DistrictListPayload): Observable<DistrictList> {
+    const branchId = this.branchContext.activeBranchId();
     return this.http
-      .post<ApiResponse<DistrictListDto>>(`${this.baseUrl}/district-lists`, payload)
+      .post<ApiResponse<DistrictListDto>>(`${this.baseUrl}/district-lists`, {
+        ...payload,
+        branch_id: payload.branch_id ?? branchId ?? undefined,
+      })
       .pipe(map((response) => mapDistrictList(response.datos)));
   }
 

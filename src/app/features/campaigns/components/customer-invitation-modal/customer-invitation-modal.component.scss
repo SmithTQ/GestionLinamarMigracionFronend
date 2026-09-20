@@ -1,0 +1,35 @@
+:host {
+  display: contents;
+}
+
+.modal-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-form-content > app-input,
+.modal-form-content > .form-control,
+.modal-form-content > .modal-form-section,
+.modal-form-content > [role='alert'] {
+  display: block;
+}
+
+.modal-form-content .form-control {
+  gap: 0.75rem;
+}
+
+.modal-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid hsl(var(--b2));
+}

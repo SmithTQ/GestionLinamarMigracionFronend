@@ -45,6 +45,7 @@ export interface DistrictPayload {
 }
 
 export interface DistrictListPayload {
+  branch_id?: number;
   code: string;
   name: string;
   description?: string;

@@ -1,0 +1,64 @@
+<div class="space-y-3">
+  @if (googleMapsConfigured && !mapError()) {
+    <div #mapWrapper class="location-map-wrapper relative overflow-hidden rounded-2xl border border-base-300 bg-base-200">
+      <div class="location-search absolute left-3 top-3 z-10 flex">
+        <span class="sr-only">Buscar direccion</span>
+        <input
+          #searchInput
+          type="search"
+          class="location-search-input min-w-0 flex-1"
+          placeholder="Buscar direccion..."
+          autocomplete="off"
+          [disabled]="disabled"
+          (input)="onAddressInput($any($event.target).value)"
+        />
+        <button
+          type="button"
+          class="location-search-button"
+          [disabled]="disabled || mapLoading()"
+          (click)="searchAddress()"
+        >
+          Buscar
+        </button>
+        @if (suggestions().length > 0) {
+          <div class="location-suggestions absolute left-0 right-0 top-full mt-1 overflow-hidden rounded-lg">
+            @for (suggestion of suggestions(); track suggestion.id) {
+              <button
+                type="button"
+                class="location-suggestion block w-full text-left"
+                (click)="selectSuggestion(suggestion)"
+              >
+                {{ suggestion.label }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <div #mapContainer class="location-map" aria-label="Mapa para seleccionar la ubicacion de entrega"></div>
+      <button
+        type="button"
+        class="location-fullscreen-button absolute right-3 top-3 z-10"
+        [disabled]="disabled"
+        (click)="toggleFullscreen()"
+      >
+        {{ isFullscreen() ? 'Salir' : 'Expandir' }}
+      </button>
+      @if (searchError()) {
+        <p class="absolute bottom-3 left-3 z-10 rounded-lg bg-error px-3 py-2 text-xs text-error-content">
+          {{ searchError() }}
+        </p>
+      }
+      @if (mapLoading()) {
+        <div class="absolute inset-0 flex items-center justify-center bg-base-100/75 backdrop-blur-sm">
+          <span class="loading loading-spinner loading-md text-primary" aria-label="Cargando mapa"></span>
+        </div>
+      }
+    </div>
+    <p class="text-xs text-neutral/60">Busca una direccion, haz clic en el mapa o arrastra el marcador hasta la ubicacion de entrega.</p>
+  } @else {
+    <div class="rounded-2xl border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+      {{ mapError() ?? 'El mapa interactivo no esta configurado. Puedes usar tu ubicacion o indicar las coordenadas.' }}
+    </div>
+  }
+
+</div>

@@ -28,7 +28,6 @@ export interface CampaignFormValue {
   status: Campaign['status'];
   startsOn: string;
   endsOn?: string;
-  branchIds: number[];
   districtListId: number | null;
 }
 
@@ -47,6 +46,7 @@ export class CampaignCreateModalComponent implements OnChanges {
   @Input() nameError?: string;
   @Input() detailError?: string;
   @Input() districtLists: DistrictList[] = [];
+  @Input() activeBranchName = '';
   @Output() closed = new EventEmitter<void>();
   @Output() submitted = new EventEmitter<CampaignFormValue>();
 
@@ -57,7 +57,6 @@ export class CampaignCreateModalComponent implements OnChanges {
       startsOn: ['', Validators.required],
       endsOn: [''],
       status: ['draft' as Campaign['status']],
-      branchIds: [[] as number[]],
       districtListId: [null as number | null],
     },
     { validators: dateRangeValidator },
@@ -81,7 +80,6 @@ export class CampaignCreateModalComponent implements OnChanges {
       status: values.status,
       startsOn: values.startsOn,
       endsOn: values.endsOn || undefined,
-      branchIds: values.branchIds,
       districtListId: values.districtListId,
     });
   }
@@ -104,7 +102,6 @@ export class CampaignCreateModalComponent implements OnChanges {
       startsOn: '',
       endsOn: '',
       status: 'draft',
-      branchIds: [],
       districtListId: null,
     });
     this.form.markAsUntouched();
@@ -120,7 +117,6 @@ export class CampaignCreateModalComponent implements OnChanges {
       startsOn: campaign.startsOn,
       endsOn: campaign.endsOn ?? '',
       status: campaign.status,
-      branchIds: campaign.branches?.map((branch) => branch.id) ?? [],
       districtListId: campaign.districtLists?.[0]?.id ?? null,
     });
     this.form.markAsUntouched();

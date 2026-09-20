@@ -1,0 +1,41 @@
+.route-orders-map__canvas {
+  min-height: 22rem;
+  width: 100%;
+}
+
+.route-map-marker {
+  align-items: center;
+  background: #fff;
+  border: 2px solid #64748b;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 28%);
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 700;
+  height: 2rem;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0 0.4rem;
+}
+
+.route-map-marker--origin {
+  background: #dc2626;
+  border-color: #991b1b;
+  color: #fff;
+}
+
+.route-map-marker--selected {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+.route-map-marker--blocked {
+  background: #64748b;
+  border-color: #475569;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.8;
+}

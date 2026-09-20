@@ -302,6 +302,8 @@ export class DistrictsPageComponent {
 
   private openDistrictListForEdit(id: number): void {
     this.isLoadingDetail.set(true);
+    this.editingList.set(null);
+    this.listModalOpen.set(true);
     this.loadLocationOptions();
     this.service
       .getDistrictList(id)
@@ -315,7 +317,6 @@ export class DistrictsPageComponent {
           this.districtOptions.update((districts) =>
             this.mergeDistricts(districts, list.districts),
           );
-          this.listModalOpen.set(true);
         },
         error: () => undefined,
       });
