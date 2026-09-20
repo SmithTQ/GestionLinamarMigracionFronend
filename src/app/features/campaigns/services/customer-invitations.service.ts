@@ -6,7 +6,7 @@ import { environment } from '../../../../environments/environment';
 
 export interface CustomerInvitationPayload {
   form_id: number;
-  full_name: string;
+  full_name?: string;
   whatsapp_number: string;
   email?: string;
   expires_at?: string;

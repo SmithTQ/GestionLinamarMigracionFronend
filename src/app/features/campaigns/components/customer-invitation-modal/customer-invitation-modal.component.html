@@ -40,19 +40,20 @@
         </div>
       } @else {
         <app-input
-          label="Nombre completo"
+          label="Nombre completo (opcional)"
           placeholder="Ej: María Pérez"
           [value]="fullName()"
           [disabled]="isSaving"
           (valueChanged)="fullName.set($event)"
         ></app-input>
-        <app-input
+        <app-phone-input
           label="WhatsApp"
-          placeholder="Ej: 51999999999"
+          placeholder="Ej: 987 654 321"
+          [required]="true"
           [value]="whatsappNumber()"
           [disabled]="isSaving"
           (valueChanged)="whatsappNumber.set($event)"
-        ></app-input>
+        ></app-phone-input>
         <app-input
           label="Correo electrónico (opcional)"
           type="email"

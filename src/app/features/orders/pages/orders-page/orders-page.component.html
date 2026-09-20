@@ -7,9 +7,21 @@
         Consulta y administra los pedidos registrados desde los formularios publicados.
       </p>
     </div>
-    <app-button variant="secondary" icon="refresh-cw" [loading]="isLoading()" (clicked)="load()">
-      Actualizar
-    </app-button>
+    <div class="flex flex-wrap items-center gap-2">
+      @if (canRegisterOrders()) {
+        <app-button
+          icon="file-text"
+          [loading]="isOpeningManualForm()"
+          [disabled]="isOpeningManualForm()"
+          (clicked)="openManualOrderForm()"
+        >
+          Registrar pedido
+        </app-button>
+      }
+      <app-button variant="secondary" icon="refresh-cw" [loading]="isLoading()" (clicked)="load()">
+        Actualizar
+      </app-button>
+    </div>
   </section>
 
   @if (loadError()) {
@@ -94,6 +106,23 @@
     (pageChanged)="onPage($event)"
     (pageSizeChanged)="onPageSize($event)"
   ></app-table>
+
+  <app-modal
+    [isOpen]="manualFormKey() !== null"
+    size="full"
+    [closeDisabled]="isManualFormSubmitting()"
+    (closed)="closeManualOrderForm()"
+  >
+    @if (manualFormKey(); as publicKey) {
+      <app-public-form-page
+        [publicKey]="publicKey"
+        [internal]="true"
+        [embedded]="true"
+        (orderSubmitted)="onManualOrderSubmitted()"
+        (submittingChange)="isManualFormSubmitting.set($event)"
+      ></app-public-form-page>
+    }
+  </app-modal>
 
   <app-modal [isOpen]="isDetailOpen()" size="lg" (closed)="closeModals()">
     @if (isLoadingDetail()) {
@@ -190,10 +219,9 @@
             ><span>Destinatario</span
             ><input class="input input-bordered" formControlName="recipient_name"
           /></label>
-          <label class="field"
-            ><span>Teléfono</span
-            ><input class="input input-bordered" formControlName="recipient_phone"
-          /></label>
+          <div class="field">
+            <app-phone-input label="Teléfono" [required]="true" formControlName="recipient_phone"></app-phone-input>
+          </div>
           <label class="field"
             ><span>Distrito</span><input class="input input-bordered" formControlName="district"
           /></label>

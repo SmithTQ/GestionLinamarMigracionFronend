@@ -1,7 +1,7 @@
 @if (isOpen) {
   <div class="modal modal-open">
     <div
-      class="modal-box modal-shell max-h-[90vh] overflow-y-auto"
+      class="modal-box modal-shell relative max-h-[90vh] overflow-y-auto"
       [ngClass]="{
         'max-w-md': size === 'sm',
         'max-w-2xl': size === 'md',
@@ -14,7 +14,8 @@
       <button
         type="button"
         aria-label="Cerrar modal"
-        class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+        class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 z-20 bg-base-100/90 shadow-sm"
+        [disabled]="closeDisabled"
         (click)="close()"
       >
         X
@@ -25,6 +26,7 @@
       type="button"
       class="modal-backdrop"
       aria-label="Cerrar modal"
+      [disabled]="closeDisabled"
       (click)="close()"
     ></button>
   </div>

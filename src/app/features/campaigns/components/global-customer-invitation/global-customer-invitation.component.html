@@ -1,0 +1,9 @@
+<app-customer-invitation-modal
+  [isOpen]="isOpen()"
+  [isLoadingData]="isLoading()"
+  [isSaving]="isSaving()"
+  [error]="error()"
+  [invitation]="invitation()"
+  (closed)="close()"
+  (submitted)="create($event)"
+></app-customer-invitation-modal>

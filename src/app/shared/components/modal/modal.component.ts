@@ -12,9 +12,11 @@ import { NgClass } from '@angular/common';
 export class ModalComponent {
   @Input() isOpen = false;
   @Input() size: 'sm' | 'md' | 'lg' | 'xl' | 'full' = 'md';
+  @Input() closeDisabled = false;
   @Output() closed = new EventEmitter<void>();
 
   close(): void {
+    if (this.closeDisabled) return;
     this.closed.emit();
   }
 }

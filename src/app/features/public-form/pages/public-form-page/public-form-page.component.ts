@@ -3,9 +3,15 @@ import {
   Component,
   DOCUMENT,
   DestroyRef,
+  EventEmitter,
+  Input,
+  OnChanges,
   computed,
   inject,
   OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
   signal,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -36,12 +42,19 @@ interface PublicFormStep {
   styleUrl: './public-form-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PublicFormPageComponent implements OnDestroy {
+export class PublicFormPageComponent implements OnChanges, OnDestroy, OnInit {
   private static readonly maxFileSizeBytes = 10 * 1024 * 1024;
   private readonly route = inject(ActivatedRoute);
   private readonly document = inject(DOCUMENT);
   private readonly service = inject(PublicCampaignFormService);
   private readonly destroyRef = inject(DestroyRef);
+  private requestedFormKey: string | null = null;
+
+  @Input() publicKey?: string;
+  @Input() internal = false;
+  @Input() embedded = false;
+  @Output() readonly orderSubmitted = new EventEmitter<number>();
+  @Output() readonly submittingChange = new EventEmitter<boolean>();
 
   readonly form = signal<PublicCampaignForm | null>(null);
   readonly values = signal<Record<string, string>>({});
@@ -53,13 +66,20 @@ export class PublicFormPageComponent implements OnDestroy {
   readonly fileError = signal<string | null>(null);
   readonly success = signal<number | null>(null);
   readonly currentStep = signal(0);
-  readonly publicKey = this.route.snapshot.paramMap.get('publicKey') ?? '';
+  readonly routePublicKey = this.route.snapshot.paramMap.get('publicKey') ?? '';
   readonly isInvitation = this.route.snapshot.data['invitation'] === true;
+  readonly routeIsInternal = this.route.snapshot.data['internal'] === true;
   readonly formSteps = computed(() => this.buildFormSteps(this.form()?.fields ?? []));
   readonly currentStepFields = computed(() => this.formSteps()[this.currentStep()]?.fields ?? []);
 
-  constructor() {
+  ngOnInit(): void {
     this.load();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['publicKey'] && !changes['publicKey'].firstChange) {
+      this.load();
+    }
   }
 
   setValue(key: string, value: string): void {
@@ -164,29 +184,45 @@ export class PublicFormPageComponent implements OnDestroy {
     if (!this.validateRequiredFields(currentForm)) return;
     this.isSubmitting.set(true);
     const payload = this.buildSubmissionPayload();
+    const publicKey = this.formKey();
     const request = this.isInvitation
-      ? this.service.submitInvitation(this.publicKey, payload)
-      : this.service.submit(this.publicKey, payload);
+      ? this.service.submitInvitation(publicKey, payload)
+      : this.isInternal
+        ? this.service.submitInternal(publicKey, payload)
+        : this.service.submit(publicKey, payload);
+    this.submittingChange.emit(true);
     request
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isSubmitting.set(false)),
+        finalize(() => {
+          this.isSubmitting.set(false);
+          this.submittingChange.emit(false);
+        }),
       )
       .subscribe({
-        next: (result) => this.success.set(result.order_id),
+        next: (result) => {
+          this.success.set(result.order_id);
+          this.orderSubmitted.emit(result.order_id);
+        },
         error: () => this.error.set('No se pudo registrar el pedido. Intenta nuevamente.'),
       });
   }
 
   private load(): void {
-    if (!this.publicKey) {
+    const publicKey = this.formKey();
+    if (!publicKey) {
       this.isLoading.set(false);
       this.error.set('El enlace del formulario no es válido.');
       return;
     }
+    if (this.requestedFormKey === publicKey) return;
+    this.requestedFormKey = publicKey;
+    this.isLoading.set(true);
     const request = this.isInvitation
-      ? this.service.getInvitation(this.publicKey)
-      : this.service.get(this.publicKey);
+      ? this.service.getInvitation(publicKey)
+      : this.isInternal
+        ? this.service.getInternal(publicKey)
+        : this.service.get(publicKey);
     request
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -358,6 +394,14 @@ export class PublicFormPageComponent implements OnDestroy {
 
   private createSubmissionKey(): string {
     return `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  private formKey(): string {
+    return this.publicKey ?? this.routePublicKey;
+  }
+
+  get isInternal(): boolean {
+    return this.internal || this.routeIsInternal;
   }
 
   ngOnDestroy(): void {

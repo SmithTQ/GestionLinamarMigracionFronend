@@ -11,6 +11,7 @@ import {
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { InputComponent } from '@shared/components/input/input.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
+import { PhoneInputComponent } from '@shared/components/phone-input/phone-input.component';
 import { CourierInvitation } from '../../models/delivery-route.model';
 
 export interface CourierInvitationFormValue {
@@ -21,7 +22,7 @@ export interface CourierInvitationFormValue {
 @Component({
   selector: 'app-courier-invitation-modal',
   standalone: true,
-  imports: [ButtonComponent, InputComponent, ModalComponent],
+  imports: [ButtonComponent, InputComponent, ModalComponent, PhoneInputComponent],
   templateUrl: './courier-invitation-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

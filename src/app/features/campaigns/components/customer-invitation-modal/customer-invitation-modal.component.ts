@@ -12,6 +12,7 @@ import { ButtonComponent } from '@shared/components/button/button.component';
 import { InputComponent } from '@shared/components/input/input.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
+import { PhoneInputComponent } from '@shared/components/phone-input/phone-input.component';
 import { CustomerInvitation } from '@features/campaigns/services/customer-invitations.service';
 
 export interface CustomerInvitationFormValue {
@@ -24,7 +25,7 @@ export interface CustomerInvitationFormValue {
 @Component({
   selector: 'app-customer-invitation-modal',
   standalone: true,
-  imports: [ButtonComponent, InputComponent, ModalComponent, LoadingComponent],
+  imports: [ButtonComponent, InputComponent, ModalComponent, LoadingComponent, PhoneInputComponent],
   templateUrl: './customer-invitation-modal.component.html',
   styleUrl: './customer-invitation-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

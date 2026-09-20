@@ -1,0 +1,73 @@
+<label class="phone-input form-control">
+  @if (label) {
+    <span class="label-text mb-1 text-sm font-medium">
+      {{ label }}
+      @if (required) { <span class="text-error">*</span> }
+    </span>
+  }
+  <div class="join w-full">
+    <div class="phone-input__country-picker join-item">
+      @let selected = selectedCountryInfo();
+      <button
+        type="button"
+        class="btn btn-outline phone-input__country-button"
+        [disabled]="isDisabled()"
+        [attr.aria-expanded]="isCountryMenuOpen()"
+        aria-haspopup="listbox"
+        aria-label="Seleccionar país y prefijo telefónico"
+        (click)="toggleCountryMenu()"
+      >
+        <span aria-hidden="true">{{ selected.flag }}</span>
+        <span>+{{ selected.callingCode }}</span>
+        <span aria-hidden="true" class="text-xs">⌄</span>
+      </button>
+      @if (isCountryMenuOpen()) {
+        <div class="phone-input__country-menu" role="dialog" aria-label="Buscar país o prefijo">
+          <input
+            type="search"
+            class="input input-bordered input-sm w-full"
+            placeholder="Buscar país o prefijo"
+            [value]="countrySearch()"
+            (input)="updateCountrySearch($any($event.target).value)"
+          />
+          <div class="phone-input__country-results" role="listbox">
+            @for (country of filteredCountries(); track country.code) {
+              <button
+                type="button"
+                class="phone-input__country-option"
+                [class.phone-input__country-option--selected]="country.code === selectedCountry()"
+                role="option"
+                [attr.aria-selected]="country.code === selectedCountry()"
+                (click)="selectCountry(country.code)"
+              >
+                <span aria-hidden="true">{{ country.flag }}</span>
+                <span class="min-w-0 flex-1 truncate text-left">{{ country.label }}</span>
+                <span class="font-semibold text-primary">+{{ country.callingCode }}</span>
+              </button>
+            } @empty {
+              <p class="px-3 py-4 text-sm text-neutral/60">No se encontraron países.</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+    <input
+      [id]="id"
+      type="tel"
+      inputmode="tel"
+      autocomplete="tel-national"
+      class="input input-bordered join-item min-w-0 flex-1"
+      [class.input-error]="errorMessage()"
+      [disabled]="isDisabled()"
+      [placeholder]="placeholder"
+      [value]="nationalNumber()"
+      [attr.aria-invalid]="!!errorMessage()"
+      [attr.aria-describedby]="errorMessage() ? id + '-error' : null"
+      (input)="updateNumber($any($event.target).value)"
+      (blur)="markTouched()"
+    />
+  </div>
+  @if (errorMessage(); as error) {
+    <span [id]="id + '-error'" class="mt-1 text-xs text-error" role="alert">{{ error }}</span>
+  }
+</label>

@@ -20,6 +20,7 @@ import { BranchContextStore } from '@features/branches/store/branch-context.stor
 })
 export class HeaderComponent {
   @Output() toggleSidebar = new EventEmitter<void>();
+  @Output() inviteRequested = new EventEmitter<void>();
 
   private readonly document = inject(DOCUMENT);
   private readonly storageKey = 'linamar-theme';
@@ -39,6 +40,12 @@ export class HeaderComponent {
   readonly availableCampaigns = this.campaignContext.availableCampaigns;
   readonly activeCampaign = this.campaignContext.activeCampaign;
   readonly activeCampaignId = this.campaignContext.activeCampaignId;
+  readonly canGenerateInvitation = computed(
+    () =>
+      this.activeCampaign() !== null &&
+      this.authStore.hasPermission('forms.view') &&
+      this.authStore.hasPermission('orders.manage'),
+  );
   readonly campaignSwitcherOpen = signal(false);
   readonly branches = this.branchContext.branches;
   readonly activeBranch = this.branchContext.activeBranch;

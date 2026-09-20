@@ -77,6 +77,12 @@ export class PublicCampaignFormService {
       .pipe(map((response) => response.datos));
   }
 
+  getInternal(publicKey: string): Observable<PublicCampaignForm> {
+    return this.http
+      .get<ApiResponse<PublicCampaignForm>>(`${this.baseUrl}/internal/forms/${publicKey}`)
+      .pipe(map((response) => response.datos));
+  }
+
   submit(
     publicKey: string,
     payload: PublicFormSubmissionPayload,
@@ -96,6 +102,18 @@ export class PublicCampaignFormService {
       .post<
         ApiResponse<PublicFormSubmissionResult>
       >(`${this.baseUrl}/public/invitations/${token}/submissions`, payload)
+      .pipe(map((response) => response.datos));
+  }
+
+  submitInternal(
+    publicKey: string,
+    payload: PublicFormSubmissionPayload,
+  ): Observable<PublicFormSubmissionResult> {
+    return this.http
+      .post<ApiResponse<PublicFormSubmissionResult>>(
+        `${this.baseUrl}/internal/forms/${publicKey}/submissions`,
+        payload,
+      )
       .pipe(map((response) => response.datos));
   }
 }

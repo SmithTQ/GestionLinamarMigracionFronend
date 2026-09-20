@@ -5,6 +5,22 @@
     hsl(var(--b2));
 }
 
+.public-form-page--embedded {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.public-form-page--embedded .public-form-shell {
+  max-width: none;
+}
+
+.public-form-page--embedded .public-form-card {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .public-form-card {
   border: 1px solid hsl(var(--bc) / 0.08);
 }

@@ -59,13 +59,14 @@
         [disabled]="saving"
         (valueChanged)="name.set($event)"
       ></app-input>
-      <app-input
+      <app-phone-input
         label="Numero de WhatsApp"
-        placeholder="Ej: 51999999999"
+        placeholder="Ej: 987 654 321"
+        [required]="true"
         [value]="whatsappNumber()"
         [disabled]="saving"
         (valueChanged)="whatsappNumber.set($event)"
-      ></app-input>
+      ></app-phone-input>
       <p class="rounded-lg bg-base-200 p-3 text-xs text-neutral/65">
         Si el numero ya pertenece a un motorizado, se reutilizara su registro y se actualizara la asignacion.
       </p>

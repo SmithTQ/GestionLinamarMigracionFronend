@@ -3,37 +3,44 @@
     {{ field.label }}
     @if (field.required) { <span class="text-error">*</span> }
   </span>
+  @if (contactRoleHint(); as hint) {
+    <p class="public-contact-hint" role="note">{{ hint }}</p>
+  }
   @if (field.description) {
     <p [id]="fieldLabelId() + '-description'" class="mb-2 text-xs leading-5 text-neutral/60">{{ field.description }}</p>
   }
   @if (isProductField()) {
     <div
       [id]="fieldInputId() + '-options'"
-      class="grid gap-3 md:grid-cols-2"
+      class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
       [attr.aria-labelledby]="fieldLabelId()"
       tabindex="-1"
     >
       @for (product of products; track product.sku) {
         <button
           type="button"
-          class="public-product-card flex items-center gap-3 rounded-2xl border p-3.5 text-left transition"
+          class="public-product-card relative overflow-hidden rounded-2xl border text-left transition"
           [class.border-primary]="value === product.sku"
           [class.bg-primary/5]="value === product.sku"
+          [class.ring-2]="value === product.sku"
+          [class.ring-primary]="value === product.sku"
+          [class.shadow-lg]="value === product.sku"
+          [class.-translate-y-0.5]="value === product.sku"
           [attr.aria-pressed]="value === product.sku"
           [attr.aria-label]="product.name + ' - S/ ' + product.price"
           (click)="selectValue(product.sku)"
         >
-          <span class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-base-200 text-[10px] text-neutral/50">
+          <span class="flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-base-200 text-xs text-neutral/50">
             @if (product.image_thumbnail_url ?? product.image_url) {
               <img [src]="product.image_thumbnail_url ?? product.image_url" [alt]="product.name" class="h-full w-full object-cover" />
             } @else { <span aria-hidden="true">IMG</span> }
           </span>
-          <span class="min-w-0 flex-1">
-            <span class="block truncate text-sm font-semibold text-neutral">{{ product.name }}</span>
+          <span class="block min-w-0 p-4">
+            <span class="block truncate text-base font-semibold text-neutral">{{ product.name }}</span>
             <span class="mt-1 block text-sm font-semibold text-primary">S/ {{ product.price }}</span>
           </span>
           @if (value === product.sku) {
-            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-content" title="Producto seleccionado">
+            <span class="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-content" title="Producto seleccionado">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
                 <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-7.25 9a.75.75 0 0 1-1.12.043l-4.25-4.5a.75.75 0 1 1 1.09-1.03l3.66 3.874 6.72-8.346a.75.75 0 0 1 1.007-.093Z" clip-rule="evenodd" />
               </svg>
@@ -42,7 +49,7 @@
           }
         </button>
       } @empty {
-        <p class="md:col-span-2 rounded-xl bg-warning/10 p-3 text-sm text-warning">No hay productos disponibles para este formulario.</p>
+        <p class="sm:col-span-2 lg:col-span-3 rounded-xl bg-warning/10 p-3 text-sm text-warning">No hay productos disponibles para este formulario.</p>
       }
     </div>
   } @else if (isDistrictField()) {
@@ -74,7 +81,15 @@
         <p class="mt-1 text-xs text-neutral/60">o haz clic para seleccionarla</p>
       }
     </label>
+  } @else if (field.type === 'phone') {
+    <app-phone-input
+      [id]="fieldInputId()"
+      [label]="''"
+      [required]="field.required"
+      [value]="value"
+      (valueChanged)="selectValue($event)"
+    ></app-phone-input>
   } @else {
-    <input [id]="fieldInputId()" [attr.aria-labelledby]="fieldLabelId()" class="public-form-control input input-bordered" [type]="field.type === 'phone' ? 'tel' : field.type" [value]="value" (input)="selectValue($any($event.target).value)" />
+    <input [id]="fieldInputId()" [attr.aria-labelledby]="fieldLabelId()" class="public-form-control input input-bordered" [type]="field.type" [value]="value" (input)="selectValue($any($event.target).value)" />
   }
 </div>

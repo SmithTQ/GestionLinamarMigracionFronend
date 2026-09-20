@@ -3,7 +3,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { getApiErrorMessage } from '@core/utils/api-error-message';
 import { CampaignFormsService } from './campaign-forms.service';
-import { CustomerInvitation, CustomerInvitationsService } from './customer-invitations.service';
+import {
+  CustomerInvitation,
+  CustomerInvitationPayload,
+  CustomerInvitationsService,
+} from './customer-invitations.service';
 import { SessionDataStateService } from '@core/services/session-data-state.service';
 
 export interface CustomerInvitationDraft {
@@ -63,21 +67,24 @@ export class CustomerInvitationFacade {
   create(value: CustomerInvitationDraft): void {
     const formId = this.formId();
     if (!formId || this.isSaving()) return;
-    if (!value.fullName || !value.whatsappNumber) {
-      this.error.set('Completa el nombre y el numero de WhatsApp.');
+    if (!value.whatsappNumber) {
+      this.error.set('Completa el numero de WhatsApp.');
       return;
     }
 
     this.isSaving.set(true);
     this.error.set(null);
+    const payload: CustomerInvitationPayload = {
+      form_id: formId,
+      whatsapp_number: value.whatsappNumber,
+      email: value.email || undefined,
+      expires_at: value.expiresAt || undefined,
+    };
+    if (value.fullName) {
+      payload['full_name'] = value.fullName;
+    }
     this.invitationsService
-      .create({
-        form_id: formId,
-        full_name: value.fullName,
-        whatsapp_number: value.whatsappNumber,
-        email: value.email || undefined,
-        expires_at: value.expiresAt || undefined,
-      })
+      .create(payload)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.isSaving.set(false)),

@@ -16,13 +16,6 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'public/forms/:publicKey',
-    loadComponent: () =>
-      import('@features/public-form/pages/public-form-page/public-form-page.component').then(
-        (m) => m.PublicFormPageComponent,
-      ),
-  },
-  {
     path: 'ruta/:token',
     loadComponent: () =>
       import('@features/public-route/pages/public-route-page/public-route-page.component').then(

@@ -39,7 +39,7 @@ describe('CustomerInvitationFacade', () => {
     expect(facade.error()).toBeNull();
   });
 
-  it('validates required invitation data before sending', () => {
+  it('validates the WhatsApp number before sending', () => {
     formsService.list.and.returnValue(
       of([{ id: 3, status: 'published' }] as unknown as CampaignForm[]),
     );
@@ -48,7 +48,26 @@ describe('CustomerInvitationFacade', () => {
     facade.create({ fullName: '', whatsappNumber: '', email: '', expiresAt: '' });
 
     expect(invitationsService.create).not.toHaveBeenCalled();
-    expect(facade.error()).toContain('nombre');
+    expect(facade.error()).toContain('WhatsApp');
+  });
+
+  it('creates an invitation without a customer name', () => {
+    formsService.list.and.returnValue(
+      of([{ id: 3, status: 'published' }] as unknown as CampaignForm[]),
+    );
+    invitationsService.create.and.returnValue(
+      of({ invitation_token: 'token', form_url: '/form', whatsapp_url: '/wa', status: 'pending' }),
+    );
+    facade.open(12);
+
+    facade.create({ fullName: '', whatsappNumber: '51999999999', email: '', expiresAt: '' });
+
+    expect(invitationsService.create).toHaveBeenCalledWith({
+      form_id: 3,
+      whatsapp_number: '51999999999',
+      email: undefined,
+      expires_at: undefined,
+    });
   });
 
   it('creates an invitation using the selected form', () => {

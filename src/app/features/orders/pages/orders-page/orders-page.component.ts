@@ -12,6 +12,9 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { getApiErrorMessage } from '@core/utils/api-error-message';
+import { AuthStore } from '@features/auth/store/auth.store';
+import { CampaignFormsService } from '@features/campaigns/services/campaign-forms.service';
 import { OrdersStore } from '@features/orders/store/orders.store';
 import { Order, OrderFileValue, OrderStatus } from '@features/orders/models/order.model';
 import {
@@ -30,8 +33,10 @@ import {
 } from '@shared/components/table/table.component';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
+import { PhoneInputComponent } from '@shared/components/phone-input/phone-input.component';
 import { FocusInvalidDirective } from '@shared/directives/focus-invalid.directive';
 import { CampaignContextStore } from '@features/campaigns/store/campaign-context.store';
+import { PublicFormPageComponent } from '@features/public-form/pages/public-form-page/public-form-page.component';
 import {
   asOrderFileValue,
   findOrderField,
@@ -74,6 +79,8 @@ type OrderListFilterKey = 'district' | 'status' | 'deliveryDate';
     LoadingComponent,
     FocusInvalidDirective,
     ReactiveFormsModule,
+    PublicFormPageComponent,
+    PhoneInputComponent,
   ],
   templateUrl: './orders-page.component.html',
   styleUrls: ['./orders-page.component.scss'],
@@ -83,6 +90,8 @@ export class OrdersPageComponent implements OnDestroy {
   private readonly store = inject(OrdersStore);
   private readonly ordersService = inject(OrdersService);
   private readonly campaignContext = inject(CampaignContextStore);
+  private readonly formsService = inject(CampaignFormsService);
+  private readonly authStore = inject(AuthStore);
   private readonly destroyRef = inject(DestroyRef);
   private query: OrderListQuery = { page: 1, pageSize: 10 };
   private filePreviewUrl: string | null = null;
@@ -161,11 +170,17 @@ export class OrdersPageComponent implements OnDestroy {
   readonly isDeliveryEvidenceOpen = signal(false);
   readonly isLoadingDeliveryEvidence = signal(false);
   readonly isSaving = signal(false);
+  readonly isOpeningManualForm = signal(false);
+  readonly manualFormKey = signal<string | null>(null);
+  readonly isManualFormSubmitting = signal(false);
   readonly actionError = signal<string | null>(null);
   readonly pageSize = signal(10);
   readonly sort = signal<{ key: string; direction: 'asc' | 'desc' } | undefined>(undefined);
   readonly filterValues = signal<Record<string, string>>({});
   readonly hasFilters = computed(() => Object.keys(this.filterValues()).length > 0);
+  readonly canRegisterOrders = computed(
+    () => this.authStore.hasPermission('forms.view') && this.authStore.hasPermission('orders.manage'),
+  );
   readonly orderStatusFilters = Object.entries(STATUS_LABELS).map(([value, label]) => ({
     value,
     label,
@@ -297,6 +312,43 @@ export class OrdersPageComponent implements OnDestroy {
   onPageSize(pageSize: number): void {
     this.pageSize.set(pageSize);
     this.query = { ...this.query, page: 1, pageSize };
+    this.load();
+  }
+
+  openManualOrderForm(): void {
+    const campaign = this.campaignContext.activeCampaign();
+    if (!campaign || this.isOpeningManualForm()) return;
+
+    this.isOpeningManualForm.set(true);
+    this.formsService
+      .list(campaign.id, campaign.branch?.id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isOpeningManualForm.set(false)),
+      )
+      .subscribe({
+        next: (forms) => {
+          const form = forms.find((item) => item.status === 'published' && item.publicKey);
+          if (!form?.publicKey) {
+            this.actionError.set('La campaña activa no tiene un formulario publicado para registrar pedidos.');
+            return;
+          }
+          this.manualFormKey.set(form.publicKey);
+        },
+        error: (error: unknown) =>
+          this.actionError.set(
+            getApiErrorMessage(error, 'No se pudo consultar el formulario de la campaña.'),
+          ),
+      });
+  }
+
+  closeManualOrderForm(): void {
+    if (this.isManualFormSubmitting()) return;
+    this.manualFormKey.set(null);
+  }
+
+  onManualOrderSubmitted(): void {
+    this.manualFormKey.set(null);
     this.load();
   }
 

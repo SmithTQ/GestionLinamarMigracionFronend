@@ -18,6 +18,17 @@
     </div>
 
     <div class="flex shrink-0 items-center gap-0.5 sm:order-last sm:ml-auto sm:gap-1">
+      @if (canGenerateInvitation()) {
+        <div class="hidden lg:block">
+          <app-button
+            size="sm"
+            icon="send"
+            (clicked)="inviteRequested.emit()"
+          >
+            Invitar cliente
+          </app-button>
+        </div>
+      }
       @if (availableCampaigns().length > 0) {
         <label class="hidden items-center gap-2 sm:flex">
           <span class="text-xs font-medium text-neutral/60">Cambiar campa&#241;a</span>
@@ -164,5 +175,17 @@
         <span class="max-w-28 truncate">Campaña</span>
       </button>
     </div>
+  }
+
+  @if (canGenerateInvitation()) {
+    <button
+      type="button"
+      class="btn btn-primary btn-sm fixed bottom-16 right-4 z-50 rounded-full px-4 shadow-lg lg:hidden"
+      aria-label="Generar invitación para cliente"
+      (click)="inviteRequested.emit()"
+    >
+      <app-icon name="send" [size]="16"></app-icon>
+      <span>Invitar</span>
+    </button>
   }
 </header>

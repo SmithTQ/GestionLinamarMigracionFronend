@@ -26,7 +26,10 @@
       ></app-sidebar>
     </div>
     <div class="flex min-h-screen flex-1 flex-col">
-      <app-header (toggleSidebar)="toggleSidebar()"></app-header>
+      <app-header
+        (toggleSidebar)="toggleSidebar()"
+        (inviteRequested)="openInvitation()"
+      ></app-header>
       <main class="flex-1">
         <router-outlet></router-outlet>
       </main>
@@ -34,3 +37,10 @@
     </div>
   </div>
 </div>
+
+@defer (when invitationCampaignId()) {
+  <app-global-customer-invitation
+    [campaignId]="invitationCampaignId()"
+    (closed)="closeInvitation()"
+  ></app-global-customer-invitation>
+}

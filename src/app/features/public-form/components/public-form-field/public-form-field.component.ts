@@ -3,6 +3,7 @@ import {
   LocationPickerComponent,
   LocationValue,
 } from '@shared/components/location-picker/location-picker.component';
+import { PhoneInputComponent } from '@shared/components/phone-input/phone-input.component';
 import {
   PublicFormDistrict,
   PublicFormField,
@@ -17,7 +18,7 @@ export interface PublicFormFieldValueChange {
 @Component({
   selector: 'app-public-form-field',
   standalone: true,
-  imports: [LocationPickerComponent],
+  imports: [LocationPickerComponent, PhoneInputComponent],
   templateUrl: './public-form-field.component.html',
   styleUrl: './public-form-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,6 +59,17 @@ export class PublicFormFieldComponent {
 
   fieldLabelId(): string {
     return `${this.fieldInputId()}-label`;
+  }
+
+  contactRoleHint(): string | null {
+    return (
+      {
+        sender_name: 'Nombre de quien realiza el pedido.',
+        sender_phone: 'Número de WhatsApp de quien realiza el pedido.',
+        recipient_name: 'Nombre de quien recibirá el pedido.',
+        recipient_phone: 'Teléfono de quien recibirá el pedido.',
+      }[this.field.key] ?? null
+    );
   }
 
   isProductField(): boolean {
